@@ -251,6 +251,7 @@ $(document).ready(function() {
 //            },
             {
                 "targets": 2, // Column index for sorting based on the displayed content
+                "orderable": false, // Deshabilita la ordenación en esta columna
                 "render": function(data, type, row) {
 
                     // Apply conversion for alarmState
@@ -308,6 +309,7 @@ $(document).ready(function() {
             {
                 "targets": 8,
                 "type": "num",
+                "orderable": false, // Deshabilita la ordenación en esta columna
                 "render": function(data, type) {
                     if (type === 'display') {
                         return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;

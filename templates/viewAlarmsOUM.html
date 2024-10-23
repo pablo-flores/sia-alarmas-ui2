@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="author" content="pabflores@teco.com.ar">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Alarmas del Outage Manager</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        <!-- Archivos CSS locales -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/jquery.dataTables.min.css') }}">
+        <!-- Archivos JavaScript locales -->
+        <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>
+
+        <script defer src="{{ url_for('static', filename='viewAlarmsOUM.js') }}"></script>
+    </head>
+
+
+    <body>
+
+        <div id="loading">
+            <img src="static/1.gif" alt="Cargando..." style="width:100px; height:100px;">
+            <p>Cargando datos de Alarmas del Outage Manager de los últimos {{ days_configMap }} días, por favor espere...</p>
+        </div>
+        
+
+        <!-- Barra "Service Impact Analysis" con imagen -->
+        <nav class="banner"> 
+            <div class="service-impact-analysis">
+                <img src="{{ url_for('static', filename='telecom.gif') }}" alt="Telecom Logo" class="logo">
+                Service Impact Analysis
+                <!-- Botón de expansión/contracción -->
+                <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.0 - EN PRUEBAS</div>   
+                <div class="refresh-container">
+                    <a href="javascript:(window.location.href = window.location.href)" class="btn-modern">Refresh - Foto: <span id="local-time"></span></a>        
+                    <div id="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                </div>
+            </div> 
+        </nav>
+        
+
+        <!-- Contenido Expandible -->
+        <div id="expandableDiv" class="expandable-content" style="display: none;">
+
+            <div class="grid-container">
+                <div class="grid-itemRight">Primer Id Outage:</div> 
+                <div class="grid-item"> Id del Outage (o Alarma), obtenido del primero en llegar al Outage Manager (TT o FMx).</div>
+                
+                <div class="grid-itemRight">Id Incidente:</div>         
+                <div class="grid-item">Id de la ticketera o de Fault.</div>
+                
+                <div class="grid-itemRight">Estado:</div>           
+                <div class="grid-item">Estado actual del outage.</div>
+                
+                <div class="grid-itemRight">Tipo de Alarma:</div>
+                <div class="grid-item">Tipo de alarma (INDISPONIBILIDAD, DEGRADACION y TAREA_PROGRAMADA...).</div>                
+
+                <div class="grid-itemRight">T.Inicio Alarma:</div>  
+                <div class="grid-item">Fecha y hora de 1er evento de Alarma (Fault) o creación manual.</div>
+                
+                <div class="grid-itemRight">T.Fin Alarma:</div>     
+                <div class="grid-item">Fecha y hora que Fault desafectó la alarma, muestra los últimos {{ days_configMap }} días.</div>
+                
+                <div class="grid-itemRight">T.Creacion TT:</div>
+                <div class="grid-item">Fecha y hora que se reporto para el Trouble Ticket.</div>
+                
+                <div class="grid-itemRight">T.Inicio Outage:</div>
+                <div class="grid-item">Fecha y hora que llegó la afectación al Outage Manager.</div>
+
+                <div class="grid-itemRight">Dif.Inicio Alarma vs Inicio Outage:</div>
+                <div class="grid-item">Diferencia minutos entre T.Inicio Outage y T.Inicio Alarma.</div>                
+                
+                <div class="grid-itemRight">Tipo Elemento Red:</div>
+                <div class="grid-item">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto de recursos asociados a un nombre, para facilitar su gestión).</div>
+                
+                <div class="grid-itemRight">Id Elemento Red:</div>
+                <div class="grid-item">Nombre del elemento de red donde aplicó el outage.</div>
+                
+                <div class="grid-itemRight">#Clientes:</div>
+                <div class="grid-item">Cantidad de clientes afectados (clientes únicos).</div>
+                
+                <div class="grid-itemRight">TER:</div>
+                <div class="grid-item">Tiempo Estimado de Resolución según tablas históricas.</div>
+            </div>
+            
+        </div>
+
+        
+        <div class="page-content" style="position: relative; top: -10px;">
+
+            <table id="alarmTable" style="display:none; margin: 0 3px; width: calc(100% - 6px);">
+                <thead>
+                    <tr>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Primer Id Outage<span class="tooltip-text">Id del Outage (o Alarma), obtenido del primero en llegar al O. Manager (TT o FMx).</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Incidente<span class="tooltip-text">Id de la ticketera o de Fault.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Estado<span class="tooltip-text">Estado actual del outage.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo de Alarma<span class="tooltip-text">Tipo de alarma (INDISPONIBILIDAD, DEGRADACION, TAREA_PROGRAMADA...).</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Alarma<span class="tooltip-text">Fecha y hora de 1er evento de Alarma (Fault) o creación manual.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Fin Alarma<span class="tooltip-text">Fecha y hora que Fault desafecto la alarma, muestra los últimos 4 días.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Creacion TT<span class="tooltip-text">Fecha y hora que Fault desafecto la alarma, muestra los últimos 4 días.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Outage<span class="tooltip-text">Fecha y hora que llego la afectacion al Outage Manager.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Dif.Inicio Alarma vs Inicio Outage<span class="tooltip-text">Diferencia minutos entre T.Inicio Outage y T.Inicio Alarma.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo Elemento Red<span class="tooltip-text">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto recursos asociados a un nombre, para facilitar su gestión).</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Elemento Red<span class="tooltip-text">Nombre elemento de red donde aplico el outage.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">#Cli<span class="tooltip-text">Cantidad de clientes afectados (clientes únicos).</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">TER<span class="tooltip-text">Según tablas históricas.</span></th>
+                    </tr>       
+                </thead>
+                        
+                <tbody>
+                    {% for alarma in alarmas %}
+                    
+                        <tr>
+                            <td data-tooltip="Este es el contenido del tooltip">{{ alarma.alarmId }}</td>
+                            <td>{{ alarma.origenId }}</td>                                        
+                            <td>{{ alarma.alarmState }}</td>                           
+                            <td>{{ alarma.alarmType }}</td>                            
+                            <td>{{ alarma.alarmRaisedTime }}</td> <!-- Centrar contenido del TD -->                             
+                            <td>{{ alarma.alarmClearedTime }}</td> <!-- Centrar contenido del TD -->                             
+                            <td>{{ alarma.alarmReportingTime }}</td> <!-- Centrar contenido del TD -->   
+                            <td>{{ alarma.inicioOUM }}</td> <!-- Centrar contenido del TD -->   
+                            <td>{{ alarma.timeDifference }}</td> <!-- Centrar contenido del TD -->                               
+                            <td>{{ alarma.TypeNetworkElement }}</td>                
+                            <td>{{ alarma.networkElementId }}</td>
+                            <td>{{ alarma.clients }}</td> <!-- Centrar contenido del TD -->                                                                      
+                            <td>{{ alarma.timeResolution }}</td> <!-- Centrar contenido del TD -->                                                  
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="9">No hay alarmas disponibles</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>    
+
+
+        <!-- Mensaje de "Espere..." oculto al principio -->
+        <div id="loading-message" style="display: none; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 20px; border-radius: 10px; z-index: 9999;">
+            <p>Espere, procesando descarga ...</p>
+        </div>
+
+        <!-- iframe invisible para manejar la descarga -->
+        <iframe id="download-frame" style="display: none;"></iframe>
+        <button id="download-csv" style="display: none;">Descargar CSV</button>
+        <button id="download-excel" style="display: none;">Descargar CSV</button>
+
+
+        <!-- Include necessary JS libraries locally -->
+        <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>        
+        
+        <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}"></script>
+
+
+    </body>
+</html>

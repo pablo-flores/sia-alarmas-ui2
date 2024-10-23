@@ -1,0 +1,701 @@
+/* Estilos para el título y subtítulo */
+h1 {
+    color: #5290d3;
+    /* Color del texto del título */
+    top: 60px;
+}
+
+h2 {
+    font-size: 1.0em;
+    color: #5290d3;
+}
+
+h3 {
+    font-size: 1.1em;
+    color: #5290d3;
+}
+
+h4 {
+    text-align: left;
+    margin-top: 20px;
+    background-color: #74a8df;
+    color: white;
+    width: fit-content;
+}
+
+/* Estilos para la tabla */
+table {
+    border-collapse: collapse;
+/*    width: 100%;*/
+    max-width:100%;
+    table-layout: auto; /* Las columnas se ajustan según el contenido */
+    /*table-layout: fixed; /* Forces fixed column widths */
+}
+
+table.dataTable tbody th,
+table.dataTable tbody td {
+    /*padding: 2px 2px;*/
+    padding: auto auto;
+    border-collapse: collapse;
+}
+
+table.dataTable {
+    border-collapse: separate;
+    border-spacing: 1;
+}
+
+
+tr {
+    pointer-events: auto;
+}
+
+/* Reduce the padding inside each cell */
+#alarmTable th, #alarmTable td {
+    /*padding: 4px 3px; /* Reduce the padding to make cells more compact */
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 4px;
+    padding-right: 3px;
+    /*overflow: hidden; /* Hide overflow to prevent text from spilling out */
+    text-overflow: ellipsis; /* Adds ellipsis (...) if text is too long */
+    white-space: nowrap; /* Prevents text from wrapping to the next line */
+}
+/* Add padding to header cells to provide space for the sorting icon */
+#alarmTable th {
+    padding-right: 15px; /* Adjust the padding to add space for the sorting icon */
+    position: relative; /* Allows absolute positioning of the sorting icon */
+}
+
+th,
+td {
+    border: 0.5px solid #000;
+    /*padding: 3px 5px; /* Espaciado interior */
+    padding: 3px 3px;
+    width: 1%;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    /*font-size: 14px; /* Ajusta el tamaño de la letra aquí */
+    font-size: 0.8vw;   /* Tamaño de letra relativo al ancho de la ventana */
+    white-space: nowrap; /* Evita que el contenido se rompa en múltiples líneas */
+}
+
+/* Ajustar el ancho del contenido, pero permitir la ruptura de texto si es muy largo */
+td {
+    word-wrap: break-word;
+    /* Permite que el texto largo se ajuste al ancho de la columna */
+}
+
+th {
+    background-color: #74a8df;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Estilo para ajustar la columna "Alarm Cleared Time" */
+td.centered-columnLL {
+    padding: 2px 2px;    /* Reduce el espacio dentro de la celda */
+    white-space: nowrap;    /* Evita que el texto se divida en varias líneas */
+    width: 1%;    /* Hace que la columna se ajuste al contenido */
+    text-align: center;    /* Centra el contenido */
+}
+
+
+.footer {
+    text-align: right;
+    font-size: 0.8vw;
+    margin-top: 20px;
+}
+
+
+/* Estilos generales */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilos para formularios */
+form {
+    width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    /*: 0 2px 10px rgba(0, 0, 0, 0.1);*/
+}
+
+/* Elimina margen y padding por defecto */
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Opcional: Oculta el desplazamiento horizontal */
+}
+
+
+/* Barra de Service Impact Analysis */
+.service-impact-analysis {
+    background-color: #5290d3;
+    color: rgb(255, 255, 255);
+    padding: 7px 0;
+    width: 100%;
+    /*max-width:100%;*/
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: none;
+    letter-spacing: 2px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    /*: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    /* Asegúrate de que ningún otro elemento esté sobre la tabla */
+    align-items: center;
+    justify-content: left;
+    height: 30px;
+    display: flex;
+}
+
+/* Estilo de la imagen del logo en la barra */
+.service-impact-analysis .logo {
+    height: 90%;
+    /* Ajusta el tamaño de la imagen al alto de la barra */
+    margin-right: 10px;
+    max-height: 35px;
+    /* Puedes ajustar este valor según el diseño */
+}
+
+/* Loading spinner */
+#loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    flex-direction: column;
+}
+
+/* Estilo específico para el encabezado Alarm ID */
+.small-title {
+    font-size: 0.7vw;
+    /* Tamaño más pequeño solo para Alarm ID */
+}
+
+.refresh-container {
+    text-align: right;
+    margin-left: auto;
+    /* Mueve el botón completamente a la derecha */
+    font-size: 0.7vw;
+    /*display: flex;*/
+    /* Flexbox para alinear elementos internamente */
+    align-items: center;
+    /* Centra verticalmente el botón */
+}
+
+
+.btn-modern {
+    display: flex;    /* Flexbox para alinear elementos internamente */
+    background-color: #5290d3;    /* Color de fondo azul moderno */
+    color: white;    /* Texto en blanco */
+    text-decoration: none;    /* Elimina el subrayado del enlace */
+    font-size: 0.7vw;    /* Tamaño de fuente moderno */
+    font-weight: 300;    /* Un poco más grueso para que se vea bien */
+    padding: 4px 20px;    /* Espaciado interior para un botón más slim */
+    border-radius: 25px;    /* Bordes redondeados para un estilo moderno */
+    /*box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidad */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;    /* Animaciones suaves */
+    /*justify-content: space-between;*/
+    text-align: right;
+    margin-right: 20px;
+    align-items: center;  /* Centra verticalmente el botón */
+}
+
+.btn-modern:hover {
+    background-color: #0056b3 !important;    /* Color de fondo más oscuro al pasar el mouse */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);    /* Sombra más fuerte al pasar el mouse */
+}
+
+.btn-modern:active {
+    background-color: #004085;    /* Color más oscuro cuando se hace clic */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);    /* Sombra reducida cuando se hace clic */
+}
+
+#loading-message {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Estilo moderno para el campo de búsqueda de DataTables */
+.dataTables_filter label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.dataTables_filter input {
+    border: 1px solid #007bff;    /* Borde moderno */
+    border-radius: 25px;    /* Bordes redondeados */
+    padding: 2px 2px;    /* Espaciado interior */
+    font-size: 16px;    /* Tamaño de la fuente */
+    outline: none;    /* Elimina el borde de enfoque predeterminado */
+    transition: border-color 0.3s ease;    /* Suaviza la transición del borde */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);    /* Sombra suave para darle profundidad */
+}
+
+
+.dataTables_filter input:focus {
+    border-color: #0056b3;    /* Cambia el color del borde al hacer foco */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.4);    /* Aumenta la sombra al hacer foco */
+}
+
+.dataTables_filter {
+    text-align: right;    /* Alinea el campo de búsqueda a la derecha */
+    margin-bottom: 2px;    /* Espacio debajo */
+}
+
+
+/****************************************************************************************************/
+
+/* Expandable content style */
+/* Style for the expandable content */
+#expandableDiv {
+    display: none; /* Hidden by default */
+    /*position: relative; /* Relative to its container */
+    width: 100%; /* Full width */
+    background-color: lightgoldenrodyellow; /* Background color for the content */
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for better visibility */
+    z-index: 1000; /* Ensure it appears above other elements */
+    /*margin-top: 10px; /* Adds space between the service bar and the content */
+}
+
+
+/* Adjust button styles if necessary */
+#toggleButton {
+    z-index: 2000; /* Ensure the button is also above other content */
+}
+
+/****************************************************************************************************/
+
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]:checked+#expandableDiv {
+    height: auto;    /* Altura final cuando el div esté expandido */
+}
+
+
+/* Estilo del banner */
+.banner {
+    /*background-color: #1E90FF;
+    color: white;*/
+    /*background-color: #5290d3; /* Mismo color de la barra azul */
+    padding: 25px;
+    text-align: center;
+    font-size: 1.2vw;
+    height: 15px; /* espacio entre barra y grilla Ajusta el valor según el tamaño deseado */
+}
+
+/* Separación entre el banner y el contenido */
+.page-content {
+    margin-top: 0px;    /* Espacio entre el banner y el contenido */
+    overflow: visible;
+    /*padding: 20px;*/
+    /*background-color: #f4f4f4;*/
+    /*min-height: 400px; /* Ajusta según el contenido */
+}
+
+/* Resaltar la fila al pasar el mouse */
+#alarmTable tbody tr:hover {
+    background-color: #c8c8c8;
+    /* Cambia a cualquier color que prefieras */
+    color: #000000;
+    /* Cambia a cualquier color que prefieras */
+    /*font-weight: bold;*/
+    cursor: pointer; /* Indica que la fila es interactiva */
+}
+
+
+
+/**************************************************/
+/* Contenedor del tooltip */
+.tooltip-cell {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Estilo del tooltip */
+.tooltip-text {
+    visibility: hidden;
+    background-color: #333; /* Fondo gris oscuro */
+    color: #fff; /* Texto blanco */
+    text-align: left; /* Alinear el texto del tooltip */
+    border-radius: 5px;
+    padding: 10px;
+    position: absolute;
+    z-index: 9999;
+    bottom: 125%;
+    left: 70%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.9);
+    font-size: 12px; /* Tamaño de letra más pequeño */
+    left: 30%; /* Mover el tooltip más hacia la ... */
+    transform: translateX(0%); /* Ajustar la posición horizontal */    
+    border: 1px solid #d32222; /* Borde opcional para mayor definición */ 
+}
+
+
+/* Flecha del tooltip (Eliminar o comentar para quitarla) */
+.tooltip-text:after {
+    content: "";
+    position: absolute;
+    top: 100%; 
+    left: 30%;
+    margin-left: -5px;
+    border-width: 15px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+
+/* Mostrar el tooltip al pasar el ratón */
+.tooltip-cell:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;    
+}
+
+/* Estructura del contenido del tooltip */
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px; /* Espacio entre filas */
+}
+
+/* Estilo para el título */
+.tooltip-title {
+    font-weight: bold;
+    margin-right: 10px; /* Espacio entre título y valor */
+}
+
+/* Estilo para el valor */
+.tooltip-value {
+    text-align: right;
+    white-space: nowrap; /* Evita que los valores se rompan en múltiples líneas */
+}
+
+
+
+/**************************************************/
+
+/* Contenedor del tooltip para el encabezado */
+.tooltip-header {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Estilo del tooltip */
+.tooltip-header .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: auto; /* Ajusta el ancho del tooltip según el contenido */
+    /*background-color: #387bc3; */
+    background-color: #2A3E52; /* Color de fondo azul grisáceo oscuro */
+    color: #ffffff; /* Texto blanco */
+    text-align: center;
+    border-radius: 8px;
+    padding: 8px 15px; /* Espaciado interno */
+    padding: 5px;
+    position: absolute;
+    z-index: 9999;
+    bottom: 120%; /* Mostrar arriba del encabezado */
+    left: 70%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.3s ease; /* Transición suave */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); /* Sombra */
+    font-size: 1.0em; /* Tamaño de fuente más pequeño */
+    white-space: nowrap; /* Evitar que el texto se envuelva */
+    /*box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.9);*/
+    /*font-size: 12px; /* Tamaño de letra más pequeño */   
+    border: 1px solid #90dcff; /* Borde opcional para mayor definición */ 
+}
+
+
+/* Mostrar el tooltip al pasar el ratón */
+.tooltip-header:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px); /* Eleva el tooltip */
+}
+
+
+
+
+/**************************************************/
+
+/*POP Modal*/
+
+/* Estilos para el botón */
+#openModalBtn {
+    padding: 10px 20px;
+    background-color: #5290d3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Estilos para el modal */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Fijo en la pantalla */
+    z-index: 9999; /* Sobre otros elementos */
+    left: 0;
+    top: 0;
+    /*width: 100%; /* Ancho total */
+    max-width:100%;
+    /*height: 100%; /* Altura total */
+    height:auto;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro semi-transparente */
+}
+
+/* Estilos para el contenido del modal */
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* Centrado verticalmente */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Ancho del modal */
+    max-width: 600px; /* Ancho máximo */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos para el botón de cerrar */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/**************************************************/
+
+/* Ocultar el botón por defecto */
+#download-csv {
+    display: none;
+}
+
+/* Mostrar el botón solo al imprimir */
+@media print {
+    #download-csv {
+        display: block;
+    }
+}
+
+/********************************************************/
+
+
+/* Estilo para resaltar las filas filtradas */
+.filtered-row {
+    background-color: rgba(255, 255, 0, 0.3); /* Amarillo claro y transparente */
+}
+
+/********************************************************/    
+
+/* Style for the container to set font size to #vw */
+.small-text {
+    font-size: 0.9vw;
+}
+
+.small-textExpandableDiv {
+    font-size: 0.9vw;
+}
+
+
+/***********************************************************/
+
+/* Reducir el tamaño de los selectores de cantidad de entradas */
+.dataTables_wrapper .dataTables_length select {
+    font-size: 0.7rem; /* Ajusta según tus necesidades */
+    padding: 1px; /* Reduce el padding para ajustar el tamaño */
+    height: auto;
+}
+
+/* Reducir el tamaño de la caja de búsqueda */
+.dataTables_wrapper .dataTables_filter input {
+    font-size: 0.7rem; /* Ajusta según tus necesidades */
+    padding: 1px; /* Reduce el padding */
+    height: auto;
+}
+
+/* Reducir el tamaño del texto de la información de la tabla */
+.dataTables_wrapper .dataTables_info {
+    font-size: 0.7rem; /* Ajusta según tus necesidades */
+}
+
+/* Reducir el tamaño de los botones de paginación */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    font-size: 0.7rem; /* Ajusta según tus necesidades */
+    padding: 1px 3px; /* Ajusta padding para reducir tamaño */
+    margin: 0 1px;
+    height: auto;
+}
+
+/* Ajustar márgenes del cuadro de búsqueda */
+.dataTables_filter {
+    margin: 3px;
+}
+
+.dataTables_info {
+    margin: 3px;
+}
+
+.dataTables_length {
+    margin: 3px;
+}
+
+.dataTables_paginate {
+    margin: 3px;
+}
+
+
+/***********************************************************/
+
+/* Estilos para el contenedor de la barra de progreso */
+#progress-container {
+    width: 90%; /* Ancho de la barra */
+    height: 2px; /* Alto de la barra */
+    background-color: #5290d3; /* Mismo color que la barra del fondo */
+    /*border-radius: 5px; /* Bordes redondeados */
+    overflow: hidden;
+    position: relative; /* Para alinear correctamente el progreso */
+    margin-right: 5%; /* Margen derecho para alejar del borde */
+    direction: rtl; /* Invertir la dirección del llenado */
+    margin-top: 3px; /* Añade un margen superior del botón de Refresh */
+    border: 1px solid #fcf298;   /* recuadro de progress*/
+}
+
+/* Estilo del botón cuando se activa el progress */
+#progress-container.active + .btn-modern {
+    background-color: #5290d3; /* Mantener el color inicial */
+}
+
+/* Barra de progreso real */
+#progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(to left, 
+/*        #5290d3,  /* Mismo color que la barra del fondo */
+/*        #5290d3,  /* Azul de fondo */
+/*        #5a98d5,  /* Azul ligeramente más claro */
+/*        #6ca8d9,  /* Azul más claro */
+/*        #7fb9dd,  /* Azul muy claro */
+/*        #93cbe2,  /* Azul-verde claro */
+/*        #a7dde7,  /* Verde amarillento */
+/*        #bbeeec,  /* Verde más claro */
+/*        #cfeeeb,  /* Verde-amarillo más claro */
+/*        #eae8ad,  /* Amarillo pálido */
+/*        #eee19e,  /* Amarillo claro */
+/*        #f5d380,  /* Amarillo dorado oscuro */
+/*        #fcc563,  /* Naranja amarillo */
+
+        #f25500,  /* Rojo brillante */
+        #ff7410,  /* Rojo anaranjado */  
+        #ff912a  /* Naranja rojizo */ 
+                          
+/*
+        #d93500,  /* Rojo oscuro */
+ /*       #bf1700,  /* Rojo oscuro intenso */
+ /*       #bf1700,  /* Rojo oscuro intenso */        
+  /*      #cc0000   /* Rojo oscuro final */
+        
+    );
+    transition: width 0.5s ease; /* Animación de progreso */
+}
+
+
+/***********************************************************/
+
+/* Estilo para el botón */
+.toggle-btn {
+    background-color: #5290d3;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+/* Estilo para el contenido expandible */
+.expandable-content {
+    padding: 15px;
+    border: 1px solid #5290d3;
+    background-color: #f0f0f0;
+    margin-top: 10px;
+    /*position: absolute; /* Cambiar a absolute */
+    top: 60px; /* Ajusta según tu diseño */
+    left: 20px; /* Ajusta según tu diseño */
+    width: calc(100% - 40px); /* Ajusta el ancho según tu diseño */
+    z-index: 9999; /* Asegúrate de que aparezca encima */
+    display: none; /* Oculto por defecto */
+}
+
+
+/***********************************************************/
+
+.grid-container {
+    display: grid;
+    grid-template-columns: max-content auto ;
+    background-color: #f0f0f0;
+    padding: auto;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);    /* Sombra */
+  }
+
+  .grid-item {
+    background-color: #f0f0f0;
+    /*border: 1px solid rgba(0, 0, 0, 0.8);/**/
+    padding: auto;
+    /*font-size: 1.1rem;*/
+    font-size: 0.8rem; /* Ajusta según tus necesidades */
+    text-align: left;
+  }
+
+  .grid-itemRight {
+    background-color: #f0f0f0;
+    /*border: 1px solid rgba(0, 0, 0, 0.8);/**/
+    padding: auto;
+    /*font-size: 1.1rem;*/
+    font-size: 0.8rem; /* Ajusta según tus necesidades */
+    text-align: right;
+    font-weight: bold;
+  }
+
+/***********************************************************/
+
+/*para el targets 1*/
+.text-center {
+    text-align: center;
+}
+.text-left {
+    text-align: left;
+}
+
+/***********************************************************/

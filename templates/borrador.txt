@@ -1,0 +1,56 @@
+<td data-tooltip="Este es el contenido del tooltip">{{ alarma.alarmId }}</td>
+<td>{{ alarma.origenId }}</td>                                        
+<td>{{ alarma.alarmState }}</td>                           
+<td>{{ alarma.alarmType }}</td>                            
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.alarmRaisedTime }}</td> <!-- Centrar contenido del TD -->                             
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.alarmClearedTime }}</td> <!-- Centrar contenido del TD -->                             
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.alarmReportingTime }}</td> <!-- Centrar contenido del TD -->   
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.inicioOUM }}</td> <!-- Centrar contenido del TD -->   
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.timeDifference }}</td> <!-- Centrar contenido del TD -->                               
+<td>{{ alarma.TypeNetworkElement }}</td>                
+<td>{{ alarma.networkElementId }}</td>
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.clients }}</td> <!-- Centrar contenido del TD -->                                                                      
+<td style="text-align: center; padding: 2px 2px; width: 1%; ">{{ alarma.timeResolution }}</td> <!-- Centrar contenido del TD -->   
+
+
+tableBody += `
+<tr>
+    <td class="tooltip-cell" style="text-align: left;padding: 2px 2px;width: 1%;">
+        ${alarma.alarmId}
+        <span class="tooltip-text">                           
+            <div class="tooltip-row">
+                <span class="tooltip-title">Origen:</span>
+                <span class="tooltip-value">${(alarma.sourceSystemId).split('').join(' ')}</span>
+            </div>
+            <div class="tooltip-row">
+                <span class="tooltip-title">Deteccion:</span>
+                <span class="tooltip-value">${alarma.alarmRaisedTime}</span>
+            </div>
+            <div class="tooltip-row">
+                <span class="tooltip-title">Reporte:</span>
+                <span class="tooltip-value">${alarma.alarmReportingTime}</span>
+            </div>
+            <div class="tooltip-row">
+                <span class="tooltip-title">Arribo Outage:</span>
+                <span class="tooltip-value">${alarma.inicioOUM}</span>
+            </div>
+            <div class="tooltip-row">
+                <span class="tooltip-title">Resuelto:</span>
+                <span class="tooltip-value">${alarma.alarmClearedTime}</span>
+            </div>
+        </span>
+    </td>
+
+    <td style="text-align: left;padding: 2px 2px;width: 1%;">${alarma.origenId }</td>
+    <td style="text-align: left;padding: 2px 2px;width: 1%;">${alarmState }</td> <!-- Use modified alarmState here -->                   
+    <td style="text-align: left;padding: 2px 2px;width: 1%;">${alarma.alarmType}</td>                    
+    <td style="text-align: center;padding: 2px 2px;width: 1%;">${alarma.alarmRaisedTime }</td> <!-- Centrar contenido del TD -->                            
+    <td style="text-align: center;padding: 2px 2px;width: 1%;">${alarma.alarmClearedTime }</td> <!-- Centrar contenido del TD -->
+    <td style="text-align: center;padding: 2px 2px;width: 1%;">${alarma.alarmReportingTime}</td> <!-- Centrar contenido del TD -->                    
+    <td style="text-align: center;padding: 2px 2px;width: 1%;">${alarma.inicioOUM}</td> <!-- Centrar contenido del TD -->
+    <td style="text-align: right;padding: 2px 2px;width: 1%;">${alarma.timeDifference }</td> <!-- New column for the time difference -->
+    <td style="text-align: left;padding: 2px 2px;width: 1%;">${alarma.TypeNetworkElement}</td>
+    <td style="text-align: left;padding: 2px 2px;width: 1%;">${alarma.networkElementId}</td>
+    <td style="text-align: right;padding: 2px 4px;width: 1%;">${alarma.clients}</td> <!-- Centrar contenido del TD -->
+    <td style="text-align: right;padding: 2px 8px;width: 1%;">${alarma.timeResolution}</td> <!-- Centrar contenido del TD -->
+</tr>`;

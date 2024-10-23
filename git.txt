@@ -1,0 +1,7 @@
+echo "# python" >> README.md
+git init
+git add .\app.py
+git branch -M main
+git commit -m "first commit"
+#git remote add origin https://github.com/pablo-flores/sia-alarmas-ui2.git
+git push -u origin main

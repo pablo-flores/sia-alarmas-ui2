@@ -535,7 +535,7 @@ function displayModal(data) {
             // Supongamos que el campo que determina la categoría es 'alarmType'
             // Ajusta esto según tu estructura de datos
             if (item._class) {
-                if (item._class === "ar.com.teco.models.EventNotificationAudit") {
+                if (item._class === "ar.com.teco.models.EventNotificationAudit" || item._class === "ar.com.teco.models.NotificationAudit") {
                     detalles = 'Detalles Audit';
                 } else {
                     detalles = 'Detalles Trifecta';

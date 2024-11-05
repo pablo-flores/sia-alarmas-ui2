@@ -534,13 +534,12 @@ function displayModal(data) {
 
             // Supongamos que el campo que determina la categoría es 'alarmType'
             // Ajusta esto según tu estructura de datos
-            if (item._class) {
-                if (item._class === "ar.com.teco.models.EventNotificationAudit" || item._class === "ar.com.teco.models.NotificationAudit") {
-                    detalles = 'Detalles Audit';
+            if (item._class === "ar.com.teco.models.EventNotificationAudit" || item._class === "ar.com.teco.models.NotificationAudit") {
+                detalles = 'Detalles Audit';
+            } else if (item.offsetKafka) {
+                detalles = 'Detalles Trifecta';
             }
-            if (item.offsetKafka){
-                    detalles = 'Detalles Trifecta';
-            }            
+                     
 
             // Formatear el JSON con indentación de 4 espacios
             const formattedJSON = JSON.stringify(item, null, 4);

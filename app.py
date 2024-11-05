@@ -6,6 +6,7 @@ from flask_pymongo import PyMongo
 from pytz import timezone, utc
 import pandas as pd
 import os
+from bson import ObjectId  # Importa ObjectId aquí
 
 # Configuración del logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -52,6 +53,70 @@ def index():
 
     
     return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
+
+# Función para convertir ObjectId a str en los resultados
+def convert_object_ids(data):
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict):
+                for key, value in item.items():
+                    if isinstance(value, ObjectId):
+                        item[key] = str(value)
+    elif isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, ObjectId):
+                data[key] = str(value)
+    return data
+
+
+@app.route('/search_alarm', methods=['GET'])
+def search_alarm():
+    query = request.args.get('query')
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+
+    # Buscar en la colección 'receiver_request_audit'
+    result_audit = list(mongo.db.receiver_request_audit.find({
+        "$or": [
+            {"alarmId": query},
+            {"origenId": query}
+        ]
+    }))
+
+    # Buscar en las colecciones 'trifecta-prod-ps' y 'trifecta-prod-ph'
+    result_trifecta = list(mongo.db.get_collection("trifecta-prod-ps").aggregate([
+        {
+            "$match": {
+                "$or": [
+                    {"alarmId": query},
+                    {"origenId": query}
+                ]
+            }
+        },
+        {
+            "$unionWith": {
+                "coll": "trifecta-prod-ph",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$or": [
+                                {"alarmId": query},
+                                {"origenId": query}
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]))
+
+    # Combinar los resultados
+    combined_results = result_audit + result_trifecta
+
+    # Convertir ObjectId a str antes de devolver los resultados
+    combined_results = convert_object_ids(combined_results)
+
+    return jsonify(combined_results)
 
 
 # Nueva ruta para obtener las alarmas en formato JSON

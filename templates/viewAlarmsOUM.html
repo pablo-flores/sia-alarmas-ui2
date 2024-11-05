@@ -8,13 +8,20 @@
         <title>Alarmas del Outage Manager</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
         <!-- Archivos CSS locales -->
         <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/jquery.dataTables.min.css') }}">
+
         <!-- Archivos JavaScript locales -->
         <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
         <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>
 
+        <!-- highlight.js JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+    
         <script defer src="{{ url_for('static', filename='viewAlarmsOUM.js') }}"></script>
+
     </head>
 
 
@@ -156,6 +163,18 @@
         <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>        
         
         <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}"></script>
+
+        <!-- Modal para mostrar los resultados de la búsqueda -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span id="close-modal" class="close">&times;</span>
+                <h2>Resultados de la Búsqueda</h2>
+                <div id="modal-content">
+                    <!-- Resultados se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
+
 
 
     </body>

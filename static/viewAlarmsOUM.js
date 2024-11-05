@@ -199,32 +199,42 @@ $(document).ready(function() {
             {
                 "targets": 0, // Index of the 'alarmId' column
                 "render": function(data, type, row) {
-                    return `
-                        <div class="tooltip-cell" style="text-align: left;">
-                            ${data}
-                            <span class="tooltip-text">                           
-                                <div class="tooltip-row">
-                                    <span class="tooltip-title">Origen:</span>
-                                    <span class="tooltip-value">${(row.sourceSystemId || '').split('').join(' ')}</span>
-                                </div>
-                                <div class="tooltip-row">
-                                    <span class="tooltip-title">Deteccion:</span>
-                                    <span class="tooltip-value">${row.alarmRaisedTime || '-'}</span>
-                                </div>
-                                <div class="tooltip-row">
-                                    <span class="tooltip-title">Reporte:</span>
-                                    <span class="tooltip-value">${row.alarmReportingTime || '-'}</span>
-                                </div>
-                                <div class="tooltip-row">
-                                    <span class="tooltip-title">Arribo Outage:</span>
-                                    <span class="tooltip-value">${row.inicioOUM || '-'}</span>
-                                </div>
-                                <div class="tooltip-row">
-                                    <span class="tooltip-title">Resuelto:</span>
-                                    <span class="tooltip-value">${row.alarmClearedTime || '-'}</span>
-                                </div>
-                            </span>
-                        </div>`;
+                    // Ensure data is a string to avoid errors
+                    let alarmId = data ? data : '';
+            
+                    // Eliminar los primeros 4 caracteres para obtener cleanAlarmId
+                    let cleanAlarmId = alarmId.length > 4 ? alarmId.substring(4).trim() : alarmId.trim();
+            
+                    // Aplica la clase 'json' para resaltar la sintaxis y añade data-alarmid
+                    if (type === 'display') {
+                        return `
+                            <div class="tooltip-cell" style="text-align: left;" data-alarmid="${cleanAlarmId}">
+                                ${alarmId}
+                                <span class="tooltip-text">                           
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Origen:</span>
+                                        <span class="tooltip-value">${(row.sourceSystemId || '').split('').join(' ')}</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Deteccion:</span>
+                                        <span class="tooltip-value">${row.alarmRaisedTime || '-'}</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Reporte:</span>
+                                        <span class="tooltip-value">${row.alarmReportingTime || '-'}</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Arribo Outage:</span>
+                                        <span class="tooltip-value">${row.inicioOUM || '-'}</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Resuelto:</span>
+                                        <span class="tooltip-value">${row.alarmClearedTime || '-'}</span>
+                                    </div>
+                                </span>
+                            </div>`;
+                    }
+                    return alarmId;
                 }
             },
             {
@@ -491,95 +501,88 @@ $(document).ready(function() {
 });
 
 /*******************************************************************************/
-/*
-// Función para actualizar el tiempo local con la zona horaria de Buenos Aires
-document.addEventListener('DOMContentLoaded', function () {
-    // Set the initial local time
-    updateLocalTime();
 
-    // Update the progress bar every 5 seconds
-    setInterval(updateProgressBar, 5000);
+// Listener para clic en alarmId (primera columna) utilizando data-alarmid
+$('#alarmTable tbody').on('click', 'td:first-child .tooltip-cell', function () {
+    var alarmId = $(this).data('alarmid'); // Obtener el cleanAlarmId desde el data-alarmid
+    console.log("Alarm ID clicked:", alarmId); // Log para depuración
+
+    if (alarmId) {
+        fetch(`/search_alarm?query=${encodeURIComponent(alarmId)}`)
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar los resultados en el modal
+                displayModal(data);
+            })
+            .catch(error => console.error('Error:', error));
+    }
 });
 
-// Function to update the local time
-function updateLocalTime() {
-    const now = new Date();
-    const options = {
-        timeZone: 'America/Argentina/Buenos_Aires', // Set to the correct timezone
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-    };
-    const formattedTime = new Intl.DateTimeFormat('es-AR', options).format(now);
-    document.getElementById('local-time').textContent = formattedTime;
-    console.log('Local time updated:', formattedTime);
-}
+/*******************************************************************************/
 
-// Function to update the progress bar
-function updateProgressBar() {
-    const now = new Date();
-    const localTimeElement = document.getElementById('local-time').textContent;
+// Función para desplegar el modal con los resultados usando highlight.js
+function displayModal(data) {
+    let modal = document.getElementById('modal');
+    let modalContent = document.getElementById('modal-content');
+    modalContent.innerHTML = '';
 
-    console.log('Current time:', now);
-    console.log('Local time element:', localTimeElement);
-    
-    // Remove the comma and split the date and time parts
-    const [datePart, timePart] = localTimeElement.replace(',', '').split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hours, minutes, seconds] = timePart.split(':');
+    if (data && data.length > 0) {
+        data.forEach(item => {
+            // Determinar la categoría de la alarma
+            let detalles = 'Detalles: N/A'; // Valor por defecto
+            console.log('item:', item);
 
-    console.log('Parsed date:', year, month, day);
-    console.log('Parsed time:', hours, minutes, seconds);
+            // Supongamos que el campo que determina la categoría es 'alarmType'
+            // Ajusta esto según tu estructura de datos
+            if (item._class) {
+                if (item._class === "ar.com.teco.models.EventNotificationAudit") {
+                    detalles = 'Detalles Audit';
+                } else {
+                    detalles = 'Detalles Trifecta';
+                }
+            }            
 
-    // Create a new date object with the parsed values
-    const lastUpdate = new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}-03:00`); // Adjust to the correct timezone
-    console.log('Last update time:', lastUpdate);
+            // Formatear el JSON con indentación de 4 espacios
+            const formattedJSON = JSON.stringify(item, null, 4);
 
-    if (isNaN(lastUpdate.getTime())) {
-        console.error('Error: Invalid date parsed.');
-        return; // Exit the function to avoid further errors
-    }
+            modalContent.innerHTML += `
+                <div class="result-item">
+                    <p><strong>AlarmId:</strong> ${item.alarmId}</p>
+                    <p><strong>OrigenId:</strong> ${item.origenId ? item.origenId : ''}</p>
+                    <p><strong>${detalles}:</strong></p>
+                    <pre><code class="json">${formattedJSON}</code></pre>
+                </div>
+                <hr>
+            `;
+        });
 
-    const elapsed = now - lastUpdate; // Time difference in milliseconds
-    console.log('Elapsed time (ms):', elapsed);
-
-    // Calculate the percentage (10 minutes = 600,000 ms)
-    // Calculate the percentage (5 minutes = 300,000 ms)
-    const percentage = Math.min((elapsed / 300000) * 100, 100); // Cap at 100%
-    console.log('Progress percentage:', percentage);
-
-    const progressBar = document.getElementById('progress-bar');
-    progressBar.style.width = percentage + '%';
-
-    // Change the color based on the elapsed time
-    if (percentage < 20) {
-        progressBar.style.backgroundColor = 'lightgreen';
-        console.log('Progress bar color: green');
-    } else if (percentage < 40) {
-        progressBar.style.backgroundColor = 'green';
-        console.log('Progress bar color: yellow');
-    } else if (percentage < 60) {
-        progressBar.style.backgroundColor = 'lightyellow';
-        console.log('Progress bar color: yellow');
-    } else if (percentage < 80) {
-        progressBar.style.backgroundColor = 'lightorange';
-        console.log('Progress bar color: yellow');
-    } else if (percentage < 90) {
-        progressBar.style.backgroundColor = 'orange';
-        console.log('Progress bar color: yellow');                        
+        // Re-aplicar highlight.js después de añadir el contenido dinámicamente
+        hljs.highlightAll();
     } else {
-        progressBar.style.backgroundColor = 'red';
-        console.log('Progress bar color: red');
+        modalContent.innerHTML = '<p>No se encontraron resultados</p>';
     }
 
-
-
+    // Mostrar el modal añadiendo la clase 'show'
+    modal.classList.add('show');
 }
-*/
+
+
+/*******************************************************************************/
+
+// Función para cerrar el modal cuando se hace clic en la 'X'
+document.getElementById('close-modal').addEventListener('click', function () {
+    let modal = document.getElementById('modal');
+    modal.classList.remove('show');
+});
+
+// Cerrar el modal al hacer clic fuera del contenido del modal
+window.addEventListener('click', function(event) {
+    let modal = document.getElementById('modal');
+    if (event.target == modal) {
+        modal.classList.remove('show');
+    }
+});
+
 
 /*******************************************************************************/
 document.addEventListener('DOMContentLoaded', function () {

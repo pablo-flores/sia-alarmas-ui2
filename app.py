@@ -122,31 +122,30 @@ def search_alarm():
 # Nueva ruta para obtener las alarmas en formato JSON
 @app.route('/get_alarmas', methods=['GET'])
 def get_alarmas():
-
-    # Check for 'X-Forwarded-For' header first
+    # Obtener la IP del cliente
     if request.headers.get('X-Forwarded-For'):
-        client_ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()  # Take the first IP in the list
+        client_ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
     else:
         client_ip = request.remote_addr
 
     client_user = request.remote_user
     logger.info(f"Client IP: {client_ip} Client user: {client_user} - Accediendo a /get_alarmas.")
-         
 
-    days_ago = datetime.now(buenos_aires_tz) - timedelta(days=days_configMap)  # default 4
+    # Calcular la fecha límite para alarmas CLEARED
+    days_ago = datetime.now(buenos_aires_tz) - timedelta(days=days_configMap)
     logger.info(f"Consultando alarmas desde {days_ago}.")
 
+    # Obtener parámetros de paginación
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 15))
     skip = (page - 1) * limit
-    search_value = request.args.get('search[value]', '')
+    search_value = request.args.get('search[value]', '').strip()
 
-    
-    # Get sorting information
-    order_column_index = request.args.get('order[0][column]', '7')  # Default to column index 7 omArrivalTimestamp
-    order_direction = request.args.get('order[0][dir]', 'desc')  # Default to ascending
+    # Obtener información de ordenamiento
+    order_column_index = request.args.get('order[0][column]', '7')  # Por defecto, omArrivalTimestamp
+    order_direction = request.args.get('order[0][dir]', 'desc')  # Por defecto, descendente
 
-    # Map column indices to database fields
+    # Mapeo de índices de columna a campos de la base de datos
     column_mapping = {
         '0': 'alarmId',
         '1': 'origenId',
@@ -156,7 +155,7 @@ def get_alarmas():
         '5': 'alarmClearedTime',
         '6': 'alarmReportingTime',
         '7': 'omArrivalTimestamp',
-        '8': 'timeDifference',
+        '8': 'timeDifferenceNumeric',  # Campo calculado numérico
         '9': 'TypeNetworkElement',
         '10': 'networkElementId',
         '11': 'clients',
@@ -164,150 +163,185 @@ def get_alarmas():
         '13': 'sequence'
     }
 
-    # Determine the field to sort by and the direction
-    if order_column_index is None:  # No sorting column specified, use default sorting
-        sort_field = '_id'
-        sort_direction = DESCENDING
-    else:
-        sort_field = column_mapping.get(order_column_index, 'omArrivalTimestamp')  # Default to 'omArrivalTimestamp'
-        sort_direction = ASCENDING if order_direction == 'asc' else DESCENDING
-    
-    # Debugging: Print the sorting information
-    print(f"Sorting by: {sort_field}, Direction: {order_direction}, search_value: {search_value}")
+    # Determinar el campo de ordenamiento y la dirección
+    sort_field = column_mapping.get(order_column_index, 'omArrivalTimestamp')
+    sort_direction = ASCENDING if order_direction.lower() == 'asc' else DESCENDING
 
-    # Construct the search filter if a search value is provided
-    search_filter = {
-        "$or": [
-            {"alarmId": {"$regex": search_value, "$options": "i"}},
-            {"alarmType": {"$regex": search_value, "$options": "i"}},
-            {"alarmState": {"$regex": search_value, "$options": "i"}},
-            {"clients": {"$regex": search_value, "$options": "i"}},
-            {"networkElementId": {"$regex": search_value, "$options": "i"}},
-            {"origenId": {"$regex": search_value, "$options": "i"}},
-            {"sourceSystemId": {"$regex": search_value, "$options": "i"}},
-            {"omArrivalTimestamp": {"$regex": search_value, "$options": "i"}},
-            {"alarmRaisedTime": {"$regex": search_value, "$options": "i"}},
-            {"alarmClearedTime": {"$regex": search_value, "$options": "i"}},
-            {"alarmReportingTime": {"$regex": search_value, "$options": "i"}},
-            {"TypeNetworkElement": {"$regex": search_value, "$options": "i"}},
-            {"timeResolution": {"$regex": search_value, "$options": "i"}},
-            {"timeDifference": {"$regex": search_value, "$options": "i"}},
-            {"sequence": {"$regex": search_value, "$options": "i"}}
-        ]
-    }
+    logger.info(f"Sorting by: {sort_field}, Direction: {order_direction}, search_value: '{search_value}'")
 
-    # Combine search filter with the existing query
+    # Construir el filtro de búsqueda si se proporciona un valor de búsqueda
+    search_filter = {}
+    if search_value:
+        search_regex = {"$regex": search_value, "$options": "i"}
+        search_filter = {
+            "$or": [
+                {"alarmId": search_regex},
+                {"alarmType": search_regex},
+                {"alarmState": search_regex},
+                {"clients": {"$regex": search_value, "$options": "i"}},
+                {"networkElementId": search_regex},
+                {"origenId": search_regex},
+                {"sourceSystemId": search_regex},
+                {"omArrivalTimestamp": search_regex},
+                {"alarmRaisedTime": search_regex},
+                {"alarmClearedTime": search_regex},
+                {"alarmReportingTime": search_regex},
+                {"TypeNetworkElement": search_regex},
+                {"timeResolution": {"$regex": search_value, "$options": "i"}},
+                {"sequence": {"$regex": search_value, "$options": "i"}}
+            ]
+        }
+
+    # Construir el filtro principal excluyendo 'DAMAGED'
     query_filter = {
         "$or": [
             {"alarmState": {"$in": ['RAISED', 'UPDATED', 'RETRY']}},
             {"alarmState": "CLEARED", "alarmClearedTime": {"$gte": days_ago}}
         ]
     }
+
+    # Combinar con el filtro de búsqueda si existe
     if search_filter:
         query_filter = {"$and": [query_filter, search_filter]}
 
-
-    # Perform the database query with pagination
-    cursor = mongo.db.alarm.find(
-        query_filter,
+    # Construir el pipeline de agregación
+    pipeline = [
         {
-            "_id": 0,
-            "alarmId": 1,
-            "alarmType": 1,
-            "alarmState": 1,
-            "clients": 1,
-            "TypeNetworkElement": "$networkElement.type",
-            "networkElementId": 1,
-            "timeResolution": 1,
-            "sourceSystemId": 1,
-            "origenId": 1,
-            "inicioOUM": "$omArrivalTimestamp",
-            "alarmRaisedTime": 1,
-            "alarmClearedTime": 1,
-            "alarmReportingTime": 1,
-            "sequence": 1
+            "$match": query_filter
+        },
+        {
+            "$addFields": {
+                # Reemplazar 'UPDATED' y 'RETRY' por 'RAISED' en 'alarmState'
+                "alarmState": {
+                    "$cond": {
+                        "if": {"$in": ["$alarmState", ["UPDATED", "RETRY"]]},
+                        "then": "RAISED",
+                        "else": "$alarmState"
+                    }
+                },
+                # Calcular 'timeDifferenceNumeric' como entero
+                "timeDifferenceNumeric": {
+                    "$round": {
+                        "$divide": [
+                            {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                            60000  # Convertir milisegundos a minutos
+                        ]
+                    }
+                },
+                # Formatear 'timeDifference' como cadena con 'min'
+                "timeDifference": {
+                    "$concat": [
+                        {"$toString": {
+                            "$round": {
+                                "$divide": [
+                                    {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                                    60000
+                                ]
+                            }
+                        }},
+                        "min"
+                    ]
+                }
+            }
+        },
+        {
+            "$sort": {sort_field: 1} if sort_direction == ASCENDING else {sort_field: -1}
+        },
+        {
+            "$skip": skip
+        },
+        {
+            "$limit": limit
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "outageId": 1,
+                "alarmId": 1,
+                "alarmType": 1,
+                "alarmState": 1,  # Campo actualizado
+                "clients": 1,
+                "TypeNetworkElement": "$networkElement.type",
+                "networkElementId": 1,
+                "timeResolution": 1,
+                "sourceSystemId": 1,
+                "origenId": 1,
+                "inicioOUM": "$omArrivalTimestamp",
+                "alarmRaisedTime": 1,
+                "alarmClearedTime": 1,
+                "alarmReportingTime": 1,
+                "sequence": 1,
+                "timeDifference": 1,        # Formateado para visualización
+                "timeDifferenceNumeric": 1  # Campo numérico para ordenación
+            }
         }
-    ).sort(sort_field, sort_direction).skip(skip).limit(limit)
+    ]
+
+    # Ejecutar el pipeline de agregación
+    cursor = mongo.db.alarm.aggregate(pipeline)
 
     alarmas = []
     for alarma in cursor:
-        if alarma.get('inicioOUM'):
-            alarma['inicioOUM'] = alarma.get('inicioOUM').replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-        else:
-            alarma['inicioOUM'] = '-'
+        # Formatear los campos de fecha y hora
+        def format_datetime(dt):
+            if dt:
+                return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+            else:
+                return '-'
 
-        if alarma.get('alarmRaisedTime'):
-            alarma['alarmRaisedTime'] = alarma.get('alarmRaisedTime').replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-        else:
-            alarma['alarmRaisedTime'] = '-'
+        alarma['inicioOUM'] = format_datetime(alarma.get('inicioOUM'))
+        alarma['alarmRaisedTime'] = format_datetime(alarma.get('alarmRaisedTime'))
+        alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
+        alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
 
-        if alarma.get('alarmClearedTime'):
-            alarma['alarmClearedTime'] = alarma.get('alarmClearedTime').replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-        else:
-            alarma['alarmClearedTime'] = '-'
-
-        if alarma.get('alarmReportingTime'):
-            alarma['alarmReportingTime'] = alarma.get('alarmReportingTime').replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-        else:
-            alarma['alarmClearedTime'] = '-'
-
+        # Manejar el campo 'timeResolution'
         if not alarma.get('timeResolution'):
-            alarma['timeResolution'] = '-'     
+            alarma['timeResolution'] = '-'
+        else:
+            alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
 
-        
-        alarm_id = alarma.get('alarmId') or ''
-        origen_id = alarma.get('origenId') or ''
-        # infiere el origen por la numeracion
-        sourceSystem_id = alarma.get('sourceSystemId') or ''
-        timeResolution = alarma.get('timeResolution') or ''
-
+        # Procesar 'origenId'
+        origen_id = alarma.get('origenId', '')
         if len(origen_id) == 24:
-            alarma['origenId'] = 'FMS ' + origen_id
-        elif len(origen_id) == 10 or len(origen_id) == 13:
-            alarma['origenId'] = 'FMC ' + origen_id
+            alarma['origenId'] = f"FMS {origen_id}"
+        elif len(origen_id) in [10, 13]:
+            alarma['origenId'] = f"FMC {origen_id}"
+        elif origen_id:
+            alarma['origenId'] = f"ICD {origen_id}"
         else:
-            alarma['origenId'] = 'ICD ' + origen_id
-
-            
-        if len(alarm_id) == 24:
-            alarma['alarmId'] = 'FMS ' + alarm_id
-        elif len(alarm_id) == 10 or len(alarm_id) == 13:
-            alarma['alarmId'] = 'FMC ' + alarm_id
-        else:
-            alarma['alarmId'] = 'ICD ' + alarm_id                
-
-
-        alarma['timeResolution'] = str(timeResolution) + 'hs'
-
-
-        if alarma.get('inicioOUM') and alarma.get('alarmRaisedTime'):
-            inicio_outage = datetime.strptime(alarma['inicioOUM'], '%m-%d %H:%M:%S')
-            inicio_alarma = datetime.strptime(alarma['alarmRaisedTime'], '%m-%d %H:%M:%S')
-            time_difference = (inicio_outage - inicio_alarma).total_seconds() / 60  # Difference in minutes
-            alarma['timeDifference'] = str(int(time_difference)) + 'min' # Round to 0 decimal places
-        else:
-            alarma['timeDifference'] = '-'
-
-        # si el alarmId es igual que el origenId no lo muestra
-        alarm_id = alarma.get('alarmId') or ''
-        origen_id = alarma.get('origenId') or ''
-        if (alarm_id == origen_id):
             alarma['origenId'] = '-'
 
-        # **Depuración: Verificar si 'sequence' está presente**
+        # Procesar 'alarmId'
+        alarm_id = alarma.get('alarmId', '')
+        if len(alarm_id) == 24:
+            alarma['alarmId'] = f"FMS {alarm_id}"
+        elif len(alarm_id) in [10, 13]:
+            alarma['alarmId'] = f"FMC {alarm_id}"
+        elif alarm_id:
+            alarma['alarmId'] = f"ICD {alarm_id}"
+        else:
+            alarma['alarmId'] = '-'
+
+        # 'timeDifference' ya está formateado en la etapa de agregación
+        # 'timeDifferenceNumeric' es para referencia y ordenación
+
+        # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
+        if alarma.get('alarmId') == alarma.get('origenId'):
+            alarma['origenId'] = '-'
+
+        # Depuración: Verificar si 'sequence' está presente
         if 'sequence' in alarma:
             logger.debug(f"Sequence presente: {alarma['sequence']}")
         else:
             logger.warning("Campo 'sequence' ausente en el documento.")
 
-
         alarmas.append(alarma)
 
-
-    # Count total documents for pagination
+    # Contar el total de documentos que coinciden con el filtro (sin paginación)
     total_count = mongo.db.alarm.count_documents(query_filter)
 
-    logger.info(f"Se encontraron {len(alarmas)} alarmas.")
+    logger.info(f"Se encontraron {len(alarmas)} alarmas en la página {page}.")
+
     return jsonify({
         "draw": int(request.args.get('draw', 1)),
         "recordsTotal": total_count,

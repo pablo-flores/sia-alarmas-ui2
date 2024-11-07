@@ -160,7 +160,8 @@ def get_alarmas():
         '9': 'TypeNetworkElement',
         '10': 'networkElementId',
         '11': 'clients',
-        '12': 'timeResolution'
+        '12': 'timeResolution',
+        '13': 'sequence'
     }
 
     # Determine the field to sort by and the direction
@@ -190,7 +191,8 @@ def get_alarmas():
             {"alarmReportingTime": {"$regex": search_value, "$options": "i"}},
             {"TypeNetworkElement": {"$regex": search_value, "$options": "i"}},
             {"timeResolution": {"$regex": search_value, "$options": "i"}},
-            {"timeDifference": {"$regex": search_value, "$options": "i"}}
+            {"timeDifference": {"$regex": search_value, "$options": "i"}},
+            {"sequence": {"$regex": search_value, "$options": "i"}}
         ]
     }
 
@@ -222,7 +224,8 @@ def get_alarmas():
             "inicioOUM": "$omArrivalTimestamp",
             "alarmRaisedTime": 1,
             "alarmClearedTime": 1,
-            "alarmReportingTime": 1
+            "alarmReportingTime": 1,
+            "sequence": 1
         }
     ).sort(sort_field, sort_direction).skip(skip).limit(limit)
 
@@ -291,6 +294,12 @@ def get_alarmas():
         if (alarm_id == origen_id):
             alarma['origenId'] = '-'
 
+        # **Depuración: Verificar si 'sequence' está presente**
+        if 'sequence' in alarma:
+            logger.debug(f"Sequence presente: {alarma['sequence']}")
+        else:
+            logger.warning("Campo 'sequence' ausente en el documento.")
+
 
         alarmas.append(alarma)
 
@@ -328,7 +337,7 @@ def export_data(format):
             "alarmId": 1, "alarmState": 1, "alarmType": 1, 
             "inicioOUM": "$omArrivalTimestamp", "alarmRaisedTime": 1, "alarmReportingTime":1, "alarmClearedTime": 1,              
             "TypeNetworkElement": "$networkElement.type", "networkElementId": 1, "clients": 1,
-            "timeResolution": 1, "sourceSystemId": 1, "origenId": 1            
+            "timeResolution": 1, "sourceSystemId": 1, "origenId": 1, "sequence": 1            
         }
     ).sort("_id", -1)
 
@@ -343,7 +352,7 @@ def export_data(format):
 
     # Reordenar las columnas
     df = df[['alarmId', 'alarmState', 'alarmType', 'inicioOUM', 'alarmRaisedTime', 'alarmReportingTime', 'alarmClearedTime', 
-             'TypeNetworkElement', 'networkElementId', 'clients', 'timeResolution', 'sourceSystemId', 'origenId']]
+             'TypeNetworkElement', 'networkElementId', 'clients', 'timeResolution', 'sourceSystemId', 'origenId', 'sequence']]
 
     fecha_actual = datetime.now(buenos_aires_tz).strftime('%Y%m%d%H%M%S')
 

@@ -168,7 +168,7 @@ $(document).ready(function() {
                 d.search = { "value": d.search.value }; // Include search term
             },
             "dataSrc": function (json) {
-                console.log('Data received from server:', json.data); // Inspect data here
+                console.log('Datos recibidos desde server:', json.data); // Inspect data here
                 return json.data;
             }
         },
@@ -185,7 +185,8 @@ $(document).ready(function() {
             { "data": "TypeNetworkElement" },
             { "data": "networkElementId" },
             { "data": "clients" },
-            { "data": "timeResolution" }
+            { "data": "timeResolution" },
+            { "data": "sequence", "visible": false } // Añade esta línea
         ],
         "autoWidth": true,
         "paging": true,
@@ -205,6 +206,19 @@ $(document).ready(function() {
                     // Eliminar los primeros 4 caracteres para obtener cleanAlarmId
                     let cleanAlarmId = alarmId.length > 4 ? alarmId.substring(4).trim() : alarmId.trim();
             
+                    // Manejar 'sequence' correctamente
+                    let sequence = (row.sequence !== undefined && row.sequence !== null) ? row.sequence : '-';
+
+                    // Aplicar estilos condicionales
+                    let sequenceDisplay;
+                    if (typeof sequence === 'number' && sequence > 4) {
+                        sequenceDisplay = `<span style="color: red; font-weight: bold;">${sequence}</span>`;
+                    } else if (typeof sequence === 'number') {
+                        sequenceDisplay = sequence;
+                    } else {
+                        sequenceDisplay = '-';
+                    }
+
                     // Aplica la clase 'json' para resaltar la sintaxis y añade data-alarmid
                     if (type === 'display') {
                         return `
@@ -231,12 +245,16 @@ $(document).ready(function() {
                                         <span class="tooltip-title">Resuelto:</span>
                                         <span class="tooltip-value">${row.alarmClearedTime || '-'}</span>
                                     </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Sequence:</span>
+                                        <span class="tooltip-value">${sequenceDisplay}</span>
+                                    </div>                                  
                                 </span>
                             </div>`;
                     }
                     return alarmId;
                 }
-            },
+            },          
             {
                 "targets": 1, // columna 'origenId'
                 "render": function (data, type, row) {
@@ -244,21 +262,6 @@ $(document).ready(function() {
                     return `<div class="${cssClass}">${data}</div>`;
                 }
             },
-            
-//            {
-//                "targets": 2, // 'alarmState' column
-//                "render": function (data, type, row) {
-//                    // Apply conversion for alarmState
-//                    let alarmState = data;
-//                    if (alarmState === 'UPDATED' || alarmState === 'RETRY') {
-//                        alarmState = 'RAISED';
-//                    }
-//                    if (row.alarmClearedTime !== '-') {
-//                        alarmState = 'CLEARED';
-//                    }
-//                    return `<td style="text-align: left;">${alarmState}</td>`;
-//                }
-//            },
             {
                 "targets": 2, // Column index for sorting based on the displayed content
                 "orderable": false, // Deshabilita la ordenación en esta columna

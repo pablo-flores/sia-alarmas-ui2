@@ -341,7 +341,7 @@ input[type="checkbox"]:checked+#expandableDiv {
     padding: 10px;
     position: absolute;
     z-index: 9999;
-    bottom: 125%;
+    bottom: 200%;
     left: 70%;
     transform: translateX(-50%);
     opacity: 0;
@@ -361,7 +361,7 @@ input[type="checkbox"]:checked+#expandableDiv {
     position: absolute;
     top: 100%; 
     left: 30%;
-    margin-left: -5px;
+    margin-left: -15px;
     border-width: 15px;
     border-style: solid;
     border-color: #333 transparent transparent transparent;

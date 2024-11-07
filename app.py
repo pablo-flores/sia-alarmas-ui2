@@ -251,14 +251,6 @@ def get_alarmas():
         if not alarma.get('timeResolution'):
             alarma['timeResolution'] = '-'     
 
-#        # Apply conversion to alarmState
-#        alarmState = alarma.get('alarmState', '').strip()
-#        if alarmState in ['UPDATED', 'RETRY']:
-#            alarma['alarmState'] = 'RAISED'
-        
-#        if alarma['alarmClearedTime'] != '-':
-#            alarma['alarmState'] = 'CLEARED'
-
         
         alarm_id = alarma.get('alarmId') or ''
         origen_id = alarma.get('origenId') or ''
@@ -269,7 +261,7 @@ def get_alarmas():
         if len(origen_id) == 24:
             alarma['origenId'] = 'FMS ' + origen_id
         elif len(origen_id) == 10 or len(origen_id) == 13:
-            alarma['origenId'] = 'FMC ' + origen_id[:10]
+            alarma['origenId'] = 'FMC ' + origen_id
         else:
             alarma['origenId'] = 'ICD ' + origen_id
 
@@ -277,7 +269,7 @@ def get_alarmas():
         if len(alarm_id) == 24:
             alarma['alarmId'] = 'FMS ' + alarm_id
         elif len(alarm_id) == 10 or len(alarm_id) == 13:
-            alarma['alarmId'] = 'FMC ' + alarm_id[:10]
+            alarma['alarmId'] = 'FMC ' + alarm_id
         else:
             alarma['alarmId'] = 'ICD ' + alarm_id                
 

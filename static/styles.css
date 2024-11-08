@@ -744,6 +744,11 @@ input[type="checkbox"]:checked+#expandableDiv {
     display: flex; /* Muestra el modal centrado */
 }
 
+#modal-content {
+    max-height: 80vh; /* Ajusta según tus necesidades */
+    overflow-y: auto;
+}
+
 /* Actualización de .modal-content */
 .modal-content {
     background-color: #fff;

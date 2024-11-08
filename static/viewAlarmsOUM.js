@@ -594,7 +594,7 @@ function displayModal(data) {
     hljs.highlightAll();
 
     // Desplazar al inicio del contenedor de resultados
-    document.getElementById('modal-results').scrollTop = 0;
+    document.getElementById('modal-content').scrollTop = 0;
     
     // Mostrar el modal añadiendo la clase 'show'
     modal.classList.add('show');

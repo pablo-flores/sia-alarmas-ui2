@@ -373,11 +373,6 @@ def get_alarmas():
         if alarma.get('alarmId') == alarma.get('origenId'):
             alarma['origenId'] = '-'
 
-        # Depuración: Verificar si 'sequence' está presente
-        if 'sequence' in alarma:
-            logger.debug(f"Sequence presente: {alarma['sequence']}")
-        else:
-            logger.warning("Campo 'sequence' ausente en el documento.")
 
         alarmas.append(alarma)
 

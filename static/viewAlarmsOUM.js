@@ -528,7 +528,7 @@ document.querySelectorAll('.export-btn').forEach(function(button) {
 
         setTimeout(function() {
             document.getElementById('loading-message').style.display = 'none';
-        }, 20000);
+        }, 10000);
 
         event.preventDefault();
     });

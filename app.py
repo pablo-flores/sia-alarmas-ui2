@@ -55,36 +55,47 @@ def index():
     return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
 
 # Función para convertir ObjectId a str en los resultados
-def convert_object_ids(data):
-    if isinstance(data, list):
-        for item in data:
-            if isinstance(item, dict):
-                for key, value in item.items():
-                    if isinstance(value, ObjectId):
-                        item[key] = str(value)
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, ObjectId):
-                data[key] = str(value)
-    return data
+#def convert_object_ids(data):
+#    if isinstance(data, list):
+#        for item in data:
+#            if isinstance(item, dict):
+#                for key, value in item.items():
+#                    if isinstance(value, ObjectId):
+#                        item[key] = str(value)
+#    elif isinstance(data, dict):
+#        for key, value in data.items():
+#            if isinstance(value, ObjectId):
+#                data[key] = str(value)
+#    return data
 
+def convert_object_ids(data):
+    for item in data:
+        if '_id' in item and isinstance(item['_id'], ObjectId):
+            item['_id'] = str(item['_id'])
+    return data
 
 @app.route('/search_alarm', methods=['GET'])
 def search_alarm():
     query = request.args.get('query')
+    page = request.args.get('page', default='1')
+    limit = request.args.get('limit', default='10')
+
+    # Validar y convertir los parámetros de paginación
+    try:
+        page = int(page)
+        limit = int(limit)
+        if page < 1 or limit < 1:
+            raise ValueError
+    except ValueError:
+        return jsonify({"error": "Parámetros de paginación inválidos"}), 400
+
     if not query:
-        return jsonify({"error": "No query provided"}), 400
+        return jsonify({"error": "No se proporcionó una consulta"}), 400
 
-    # Buscar en la colección 'receiver_request_audit'
-    result_audit = list(mongo.db.receiver_request_audit.find({
-        "$or": [
-            {"alarmId": query},
-            {"origenId": query}
-        ]
-    }))
+    skip = (page - 1) * limit
 
-    # Buscar en las colecciones 'trifecta-prod-ps' y 'trifecta-prod-ph'
-    result_trifecta = list(mongo.db.get_collection("trifecta-prod-ps").aggregate([
+    # Tubería de agregación para unir las colecciones y aplicar la paginación
+    pipeline = [
         {
             "$match": {
                 "$or": [
@@ -107,18 +118,64 @@ def search_alarm():
                     }
                 ]
             }
+        },
+        {
+            "$unionWith": {
+                "coll": "receiver_request_audit",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$or": [
+                                {"alarmId": query},
+                                {"origenId": query}
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$facet": {
+                "metadata": [ { "$count": "total" } ],
+                "data": [ { "$skip": skip }, { "$limit": limit } ]
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$metadata",
+                "preserveNullAndEmptyArrays": True
+            }
+        },
+        {
+            "$addFields": {
+                "metadata.total": { "$ifNull": [ "$metadata.total", 0 ] }
+            }
         }
-    ]))
+    ]
 
-    # Combinar los resultados
-    combined_results = result_audit + result_trifecta
+    # Ejecutar la agregación en 'trifecta-prod-ps'
+    aggregation_result = list(mongo.db.get_collection("trifecta-prod-ps").aggregate(pipeline))
+    if len(aggregation_result) > 0:
+        total = aggregation_result[0].get('metadata', {}).get('total', 0)
+        data = aggregation_result[0].get('data', [])
+    else:
+        total = 0
+        data = []
 
     # Convertir ObjectId a str antes de devolver los resultados
-    combined_results = convert_object_ids(combined_results)
+    data = convert_object_ids(data)
 
-    return jsonify(combined_results)
+    # Calcular el total de páginas
+    total_pages = (total + limit - 1) // limit if total > 0 else 1
 
-
+    return jsonify({
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "total_pages": total_pages,
+        "data": data
+    })
+    
 # Nueva ruta para obtener las alarmas en formato JSON
 @app.route('/get_alarmas', methods=['GET'])
 def get_alarmas():

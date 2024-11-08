@@ -405,6 +405,45 @@ $(document).ready(function() {
 
 /*******************************************************************************/
 
+// Variables globales para la paginación
+let currentModalPage = 1;
+const itemsPerPage = 10;
+let totalModalPages = 1;
+let currentQuery = '';
+
+// Función para buscar alarmas con paginación del servidor
+function searchAlarms(query, page = 1, limit = itemsPerPage) {
+    // Mostrar el mensaje de "Espere..."
+    document.getElementById('loading-message').style.display = 'block';
+
+    fetch(`/search_alarm?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-message').style.display = 'none';
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            // Actualizar variables globales
+            currentModalPage = data.page;
+            totalModalPages = data.total_pages;
+            currentQuery = query;
+
+            // Mostrar los resultados en el modal
+            displayModal(data.data);
+            
+            // Actualizar controles de paginación
+            updatePaginationControls();
+        })
+        .catch(error => {
+            document.getElementById('loading-message').style.display = 'none';
+            console.error('Error:', error);
+            alert('Ocurrió un error al buscar las alarmas.');
+        });
+}
+
+/*******************************************************************************/
+
 function resetProgressBar() {
     // Reiniciar el progreso
     const progressBar = document.getElementById('progress-bar');
@@ -511,43 +550,33 @@ $('#alarmTable tbody').on('click', 'td:first-child .tooltip-cell', function () {
     console.log("Alarm ID clicked:", alarmId); // Log para depuración
 
     if (alarmId) {
-        fetch(`/search_alarm?query=${encodeURIComponent(alarmId)}`)
-            .then(response => response.json())
-            .then(data => {
-                // Mostrar los resultados en el modal
-                displayModal(data);
-            })
-            .catch(error => console.error('Error:', error));
+        searchAlarms(alarmId, 1, itemsPerPage);
     }
 });
 
+
 /*******************************************************************************/
 
-// Función para desplegar el modal con los resultados usando highlight.js
+// Función para desplegar el modal con los resultados usando highlight.js y paginación
 function displayModal(data) {
-    let modal = document.getElementById('modal');
-    let modalContent = document.getElementById('modal-content');
-    modalContent.innerHTML = '';
+    const modal = document.getElementById('modal');
+    const modalResults = document.getElementById('modal-results');
+    
+    modalResults.innerHTML = '';
 
     if (data && data.length > 0) {
         data.forEach(item => {
-            // Determinar la categoría de la alarma
-            let detalles = 'Detalles: N/A'; // Valor por defecto
-            console.log('item:', item);
+            let detalles = 'Detalles: N/A';
 
-            // Supongamos que el campo que determina la categoría es 'alarmType'
-            // Ajusta esto según tu estructura de datos
             if (item._class === "ar.com.teco.models.EventNotificationAudit" || item._class === "ar.com.teco.models.NotificationAudit") {
                 detalles = 'Detalles Audit';
             } else if (item.offsetKafka) {
                 detalles = 'Detalles Trifecta';
             }
-                     
 
-            // Formatear el JSON con indentación de 4 espacios
             const formattedJSON = JSON.stringify(item, null, 4);
 
-            modalContent.innerHTML += `
+            modalResults.innerHTML += `
                 <div class="result-item">
                     <p><strong>AlarmId:</strong> ${item.alarmId}</p>
                     <p><strong>OrigenId:</strong> ${item.origenId ? item.origenId : ''}</p>
@@ -557,16 +586,45 @@ function displayModal(data) {
                 <hr>
             `;
         });
-
-        // Re-aplicar highlight.js después de añadir el contenido dinámicamente
-        hljs.highlightAll();
     } else {
-        modalContent.innerHTML = '<p>No se encontraron resultados</p>';
+        modalResults.innerHTML = '<p>No se encontraron resultados</p>';
     }
 
+    // Re-aplicar highlight.js para el nuevo contenido
+    hljs.highlightAll();
+    
     // Mostrar el modal añadiendo la clase 'show'
     modal.classList.add('show');
 }
+
+
+/*******************************************************************************/
+
+// Función para actualizar los controles de paginación
+function updatePaginationControls() {
+    const prevPageButton = document.getElementById('prev-page');
+    const nextPageButton = document.getElementById('next-page');
+    const currentPageSpan = document.getElementById('current-page');
+
+    currentPageSpan.textContent = `Página ${currentModalPage} de ${totalModalPages}`;
+
+    // Habilitar o deshabilitar botones
+    prevPageButton.disabled = currentModalPage === 1;
+    nextPageButton.disabled = currentModalPage === totalModalPages;
+}
+
+// Eventos para los botones de paginación
+document.getElementById('prev-page').addEventListener('click', function() {
+    if (currentModalPage > 1) {
+        searchAlarms(currentQuery, currentModalPage - 1, itemsPerPage);
+    }
+});
+
+document.getElementById('next-page').addEventListener('click', function() {
+    if (currentModalPage < totalModalPages) {
+        searchAlarms(currentQuery, currentModalPage + 1, itemsPerPage);
+    }
+});
 
 
 /*******************************************************************************/
@@ -584,6 +642,9 @@ window.addEventListener('click', function(event) {
         modal.classList.remove('show');
     }
 });
+
+/*******************************************************************************/
+
 
 
 /*******************************************************************************/

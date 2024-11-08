@@ -170,7 +170,14 @@
                 <span id="close-modal" class="close">&times;</span>
                 <h2>Resultados de la Búsqueda</h2>
                 <div id="modal-content">
-                    <!-- Resultados se mostrarán aquí -->
+                    <!-- Contenedor para los resultados paginados -->
+                    <div id="modal-results"></div>
+                    <!-- Controles de paginación -->
+                    <div id="pagination-controls" style="margin-top: 20px; text-align: center;">
+                        <button id="prev-page" disabled>Anterior</button>
+                        <span id="current-page">Página 1</span>
+                        <button id="next-page">Siguiente</button>
+                    </div>
                 </div>
             </div>
         </div>

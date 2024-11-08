@@ -700,6 +700,27 @@ input[type="checkbox"]:checked+#expandableDiv {
 
 /***********************************************************/
 
+/* Estilos para los botones de paginación */
+#pagination-controls button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    background-color: #5290d3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#pagination-controls button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#pagination-controls span {
+    font-weight: bold;
+}
+
+
 /***********************************************************/
 
 /* Estilo básico para el modal */

@@ -54,19 +54,6 @@ def index():
     
     return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
 
-# Función para convertir ObjectId a str en los resultados
-#def convert_object_ids(data):
-#    if isinstance(data, list):
-#        for item in data:
-#            if isinstance(item, dict):
-#                for key, value in item.items():
-#                    if isinstance(value, ObjectId):
-#                        item[key] = str(value)
-#    elif isinstance(data, dict):
-#        for key, value in data.items():
-#            if isinstance(value, ObjectId):
-#                data[key] = str(value)
-#    return data
 
 def convert_object_ids(data):
     for item in data:

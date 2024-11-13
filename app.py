@@ -12,7 +12,7 @@ from bson import ObjectId  # Importa ObjectId aquí
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, template_folder="templates")#, static_folder="static")
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 db_name = 'OutageManager'
 port = 27017
@@ -40,9 +40,6 @@ buenos_aires_tz = timezone('America/Argentina/Buenos_Aires')
 
 # Variable para controlar la primera llamada
 first_call = True
-
-
-
 
 
 # Ruta principal que carga la página

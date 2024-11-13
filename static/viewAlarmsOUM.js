@@ -231,6 +231,7 @@ $(document).ready(function() {
             "error": function (xhr, error, thrown) {
                 console.error("Error de DataTables:", error);
                 console.log("Respuesta del servidor:", xhr.responseText);
+                alert("Ocurrió un error al cargar los datos de la tabla.");
             },
             "data": function(d) {
                 d.page = Math.floor(d.start / d.length) + 1;
@@ -239,6 +240,11 @@ $(document).ready(function() {
             },
             "dataSrc": function (json) {
                 console.log('Datos recibidos desde server:', json.data);
+                if (json.error) {
+                    console.error("Error desde el servidor:", json.error);
+                    alert("Hubo un error en el servidor: " + json.error);
+                    return [];
+                }
                 return json.data;
             }
         },

@@ -7,12 +7,16 @@ from pytz import timezone, utc
 import pandas as pd
 import os
 from bson import ObjectId  # Importa ObjectId aquí
+from flask_wtf.csrf import CSRFProtect
+from flask_cors import CORS
 
 # Configuración del logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+csrf = CSRFProtect(app)
+CORS(app)
 
 db_name = 'OutageManager'
 port = 27017

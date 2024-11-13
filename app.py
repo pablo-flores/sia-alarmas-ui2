@@ -1,4 +1,4 @@
-import logging
+import logging, time
 from flask import Flask, render_template, Response, jsonify, request
 from pymongo import ASCENDING, DESCENDING
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ from bson import ObjectId  # Importa ObjectId aquí
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__, template_folder="templates")#, static_folder="static")
 
 db_name = 'OutageManager'
 port = 27017
@@ -42,6 +42,9 @@ buenos_aires_tz = timezone('America/Argentina/Buenos_Aires')
 first_call = True
 
 
+
+
+
 # Ruta principal que carga la página
 @app.route('/')
 def index():
@@ -51,8 +54,11 @@ def index():
     else:
         client_ip = request.remote_addr
 
+    # generar un valor de timestamp automáticamente usando el tiempo actual
+    timestamp = int(time.time())
     
-    return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
+    return render_template('viewAlarmsOUM.html', days_configMap=days_configMap, timestamp=timestamp)
+    #return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
 
 
 def convert_object_ids(data):
@@ -451,3 +457,4 @@ if __name__ == '__main__':
     port = os.environ.get('FLASK_PORT') or 8080
     logger.info(f"Iniciando la aplicación en el puerto {port}.")
     app.run(port=int(port), host='0.0.0.0')
+

@@ -6,7 +6,7 @@
         <meta name="author" content="pabflores@teco.com.ar">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Alarmas del Outage Manager</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v={{ timestamp }}">
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
         <!-- Archivos CSS locales -->
@@ -23,7 +23,8 @@
         
         <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}?v={{ timestamp }}"></script>
         <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}?v={{ timestamp }}"></script>
-              
+        <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}?v={{ timestamp }}"></script>
+
 
         <!-- highlight.js JS 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>-->
@@ -169,10 +170,11 @@
         <button id="download-excel" style="display: none;">Descargar CSV</button>
 
 
-        <!-- Include necessary JS libraries locally -->
+        <!-- Include necessary JS libraries locally 
         <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
         <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>      
         <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}"></script>
+    -->
 
         <!-- Modal para mostrar los resultados de la búsqueda -->
         <div id="modal" class="modal">

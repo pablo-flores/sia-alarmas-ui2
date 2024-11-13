@@ -115,45 +115,24 @@
             <table id="alarmTable" style="display:none; margin: 0 3px; width: calc(100% - 6px);">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Primer Id Outage<span class="tooltip-text">Id del Outage (o Alarma), obtenido del primero en llegar al O. Manager (TT o FMx).</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Incidente<span class="tooltip-text">Id de la ticketera o de Fault.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Estado<span class="tooltip-text">Estado actual del outage.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo de Alarma<span class="tooltip-text">Tipo de alarma (INDISPONIBILIDAD, DEGRADACION, TAREA_PROGRAMADA...).</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Alarma<span class="tooltip-text">Fecha y hora de 1er evento de Alarma (Fault) o creación manual.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Fin Alarma<span class="tooltip-text">Fecha y hora que Fault desafecto la alarma, muestra los últimos 4 días.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Creacion TT<span class="tooltip-text">Fecha y hora que Fault desafecto la alarma, muestra los últimos 4 días.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Outage<span class="tooltip-text">Fecha y hora que llego la afectacion al Outage Manager.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Dif.Inicio Alarma vs Inicio Outage<span class="tooltip-text">Diferencia minutos entre T.Inicio Outage y T.Inicio Alarma.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo Elemento Red<span class="tooltip-text">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto recursos asociados a un nombre, para facilitar su gestión).</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Elemento Red<span class="tooltip-text">Nombre elemento de red donde aplico el outage.</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">#Cli<span class="tooltip-text">Cantidad de clientes afectados (clientes únicos).</span></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">TER<span class="tooltip-text">Según tablas históricas.</span></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Primer Id Outage</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Incidente</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Estado</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo de Alarma</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Alarma</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Fin Alarma</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Creacion TT</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Outage</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Dif.Inicio Alarma vs Inicio Outage</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo Elemento Red</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Elemento Red</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">#Cli</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">TER</th>
                     </tr>       
                 </thead>
                         
                 <tbody>
-                    {% for alarma in alarmas %}
-                    
-                        <tr>
-                            <td data-tooltip="Este es el contenido del tooltip">{{ alarma.alarmId }}</td>
-                            <td>{{ alarma.origenId }}</td>                                        
-                            <td>{{ alarma.alarmState }}</td>                           
-                            <td>{{ alarma.alarmType }}</td>                            
-                            <td>{{ alarma.alarmRaisedTime }}</td> <!-- Centrar contenido del TD -->                             
-                            <td>{{ alarma.alarmClearedTime }}</td> <!-- Centrar contenido del TD -->                             
-                            <td>{{ alarma.alarmReportingTime }}</td> <!-- Centrar contenido del TD -->   
-                            <td>{{ alarma.inicioOUM }}</td> <!-- Centrar contenido del TD -->   
-                            <td>{{ alarma.timeDifference }}</td> <!-- Centrar contenido del TD -->                               
-                            <td>{{ alarma.TypeNetworkElement }}</td>                
-                            <td>{{ alarma.networkElementId }}</td>
-                            <td>{{ alarma.clients }}</td> <!-- Centrar contenido del TD -->                                                                      
-                            <td>{{ alarma.timeResolution }}</td> <!-- Centrar contenido del TD -->                                                  
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="9">No hay alarmas disponibles</td>
-                        </tr>
-                    {% endfor %}
+
                 </tbody>
             </table>
         </div>    
@@ -168,13 +147,6 @@
         <iframe id="download-frame" style="display: none;"></iframe>
         <button id="download-csv" style="display: none;">Descargar CSV</button>
         <button id="download-excel" style="display: none;">Descargar CSV</button>
-
-
-        <!-- Include necessary JS libraries locally 
-        <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>      
-        <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}"></script>
-    -->
 
         <!-- Modal para mostrar los resultados de la búsqueda -->
         <div id="modal" class="modal">

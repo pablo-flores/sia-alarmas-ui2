@@ -228,6 +228,10 @@ $(document).ready(function() {
         "ajax": {
             "url": "/get_alarmas",
             "type": "GET",
+            "error": function (xhr, error, thrown) {
+                console.error("Error de DataTables:", error);
+                console.log("Respuesta del servidor:", xhr.responseText);
+            },
             "data": function(d) {
                 d.page = Math.floor(d.start / d.length) + 1;
                 d.limit = d.length;

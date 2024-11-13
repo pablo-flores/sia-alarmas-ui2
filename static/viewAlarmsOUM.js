@@ -705,18 +705,18 @@ function updateProgressBar() {
     const now = new Date();
     const localTimeElement = document.getElementById('local-time').textContent;
 
-    console.log('Current time:', now);
-    console.log('Local time element:', localTimeElement);
+    //console.log('Current time:', now);
+    //console.log('Local time element:', localTimeElement);
 
     const [datePart, timePart] = localTimeElement.replace(',', '').split(' ');
     const [day, month, year] = datePart.split('/');
     const [hours, minutes, seconds] = timePart.split(':');
 
-    console.log('Parsed date:', year, month, day);
-    console.log('Parsed time:', hours, minutes, seconds);
+    //console.log('Parsed date:', year, month, day);
+    //console.log('Parsed time:', hours, minutes, seconds);
 
     const lastUpdate = new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}-03:00`);
-    console.log('Last update time:', lastUpdate);
+    //console.log('Last update time:', lastUpdate);
 
     if (isNaN(lastUpdate.getTime())) {
         console.error('Error: Invalid date parsed.');
@@ -724,10 +724,12 @@ function updateProgressBar() {
     }
 
     const elapsed = now - lastUpdate;
-    console.log('Elapsed time (ms):', elapsed);
+    //console.log('Elapsed time (ms):', elapsed);
 
     const percentage = Math.min((elapsed / 600000) * 100, 100); // 10 minutos = 600,000 ms
-    console.log('Progress percentage:', percentage);
+    //console.log('Progress percentage:', percentage);
+    console.log("Progress percentage:", Math.round(percentage) + "% | Last update time:", lastUpdate);
+
 
     const progressBar = document.getElementById('progress-bar');
     progressBar.style.width = percentage + '%';

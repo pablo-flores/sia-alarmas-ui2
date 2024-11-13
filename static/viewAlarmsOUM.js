@@ -230,8 +230,8 @@ $(document).ready(function() {
             "type": "GET",
             "error": function (xhr, error, thrown) {
                 console.error("Error de DataTables:", error);
-                console.log("Respuesta del servidor:", xhr.responseText);
-                alert("Ocurrió un error al cargar los datos de la tabla.");
+                console.log("Respuesta del servidor:", xhr.responseText); 
+                alert("Ocurrió un error al cargar los datos de la tabla:\n" + error + "\nRespuesta del servidor:\n" + xhr.responseText);                
             },
             "data": function(d) {
                 d.page = Math.floor(d.start / d.length) + 1;

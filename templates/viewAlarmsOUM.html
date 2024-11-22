@@ -85,11 +85,11 @@
                 <div class="grid-itemRight">T.Fin Alarma:</div>     
                 <div class="grid-item">Fecha y hora que Fault desafectó la alarma, muestra los últimos {{ days_configMap }} días.</div>
                 
-                <div class="grid-itemRight">T.Creacion Incidente:</div>
-                <div class="grid-item">Fecha y hora que se reporto para el Incidente.</div>
+                <div class="grid-itemRight">T.Raise Alarma:</div>
+                <div class="grid-item">Fecha y hora que se reporto la afectación.</div>
                 
-                <div class="grid-itemRight">T-to Incidente:</div>
-                <div class="grid-item">Diferencia minutos entre T.Creacion Incidente y T.Inicio Detección.</div>                
+                <div class="grid-itemRight">T-to Detect:</div>
+                <div class="grid-item">Diferencia minutos entre T.Raise Alarma y T.Inicio Detección.</div>                
                 
                 <div class="grid-itemRight">T.Inicio Outage:</div>
                 <div class="grid-item">Fecha y hora que llegó la afectación al Outage Manager.</div>
@@ -108,6 +108,9 @@
                 
                 <div class="grid-itemRight">TER:</div>
                 <div class="grid-item">Tiempo Estimado de Resolución según tablas históricas.</div>
+
+                <div class="grid-itemRight">notación con <sup style='color: red;'>*</sup> :</div>
+                <div class="grid-item">identifica el campo que tiene busqueda sobre la base.</div>                
             </div>
             
         </div>
@@ -118,18 +121,18 @@
             <table id="alarmTable" style="display:none; margin: 0 3px; width: calc(100% - 6px);">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Primer Id Outage</th>
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Incidente</th>
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Estado</th>
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo de Alarma</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Primer Id Outage<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Incidente<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Estado<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo de Alarma<sup style='color: red;'>*</sup></th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Detección</th> <!-- 1er deteccion Fault  -->
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Alarma</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Raise Alarma</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Detect</th> <!-- fin o creacion alarma deteccion Fault  -->                 
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Outage</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Outage</th>  <!-- llegada al outage  -->                 
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elemento Red</th>
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elemento Red<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red<sup style='color: red;'>*</sup></th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">TER</th>
                     </tr>       

@@ -205,9 +205,9 @@ def get_alarmas():
         '4': 'alarmRaisedTime',
         '5': 'alarmClearedTime',
         '6': 'alarmReportingTime',
-        '7': 'timeDifferenceNumericIncident', # Campo calculado numérico       
+        '7': 'timeDifferenceIncident', # Campo calculado numérico       
         '8': 'omArrivalTimestamp',
-        '9': 'timeDifferenceNumeric',  # Campo calculado numérico
+        '9': 'timeDifference',  # Campo calculado numérico
         '10': 'TypeNetworkElement',
         '11': 'networkElementId',
         '12': 'clients',
@@ -230,19 +230,19 @@ def get_alarmas():
                 {"alarmId": search_regex},
                 {"alarmType": search_regex},
                 {"alarmState": search_regex},
-                {"clients": {"$regex": search_value, "$options": "i"}},
+                {"clients": search_regex},
                 {"networkElementId": search_regex},
                 {"origenId": search_regex},
                 {"sourceSystemId": search_regex},
                 {"omArrivalTimestamp": search_regex},
                 {"alarmRaisedTime": search_regex},
                 {"alarmClearedTime": search_regex},
-                {"timeDifference": {"$regex": search_value, "$options": "i"}},
-                {"timeDifferenceIncident": {"$regex": search_value, "$options": "i"}},
+                {"timeDifference": search_regex},
+                {"timeDifferenceIncident": search_regex},
                 {"alarmReportingTime": search_regex},
-                {"TypeNetworkElement": search_regex},
-                {"timeResolution": {"$regex": search_value, "$options": "i"}},
-                {"sequence": {"$regex": search_value, "$options": "i"}}
+                {"networkElement.type": search_regex},   
+                {"timeResolution": search_regex},
+                {"sequence": search_regex}
             ]
         }
 
@@ -257,6 +257,8 @@ def get_alarmas():
     # Combinar con el filtro de búsqueda si existe
     if search_filter:
         query_filter = {"$and": [query_filter, search_filter]}
+
+    #logger.info(f"query_filter: {query_filter}")
 
     # Construir el pipeline de agregación
     pipeline = [
@@ -291,22 +293,121 @@ def get_alarmas():
                         ]
                     }
                 },
-                # Formatear 'timeDifference' como cadena con 'min'
+                                # Formatear 'timeDifference' como cadena con 'min'
+
                 "timeDifferenceIncident": {
                     "$concat": [
-                        {"$toString": {
-                            "$round": {
+                        # Convertir los minutos a string
+                        { "$toString": {
+                            "$floor": {
                                 "$divide": [
-                                    {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                                    { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
                                     60000
                                 ]
                             }
                         }},
-                        "min"
+                        ":",
+                        # Convertir los segundos restantes a string con dos dígitos
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$mod": [
+                                        { "$divide": [
+                                            { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
+                                            1000
+                                        ]},
+                                        60
+                                    ]},
+                                    10
+                                ]},
+                                # Si los segundos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "0",
+                                    { "$toString": {
+                                        "$mod": [
+                                            { "$divide": [
+                                                { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
+                                                1000
+                                            ]},
+                                            60
+                                        ]
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$mod": [
+                                        { "$divide": [
+                                            { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
+                                            1000
+                                        ]},
+                                        60
+                                    ]
+                                }}
+                            ]
+                        },
+                        " min"
                     ]
-                },                                
-                # Formatear 'timeDifference' como cadena con 'min'
+                },
                 "timeDifference": {
+                    "$concat": [
+                        # Convertir los minutos a string
+                        { "$toString": {
+                            "$floor": {
+                                "$divide": [
+                                    { "$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"] },
+                                    60000
+                                ]
+                            }
+                        }},
+                        ":",
+                        # Convertir los segundos restantes a string con dos dígitos
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$mod": [
+                                        { "$divide": [
+                                            { "$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"] },
+                                            1000
+                                        ]},
+                                        60
+                                    ]},
+                                    10
+                                ]},
+                                # Si los segundos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "0",
+                                    { "$toString": {
+                                        "$floor": {
+                                            "$mod": [
+                                                { "$divide": [
+                                                    { "$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"] },
+                                                    1000
+                                                ]},
+                                                60
+                                            ]
+                                        }
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$floor": {
+                                        "$mod": [
+                                            { "$divide": [
+                                                { "$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"] },
+                                                1000
+                                            ]},
+                                            60
+                                        ]
+                                    }
+                                }}
+                            ]
+                        },
+                        " min"
+                    ]
+                },
+
+                # Formatear 'timeDifference' como cadena con 'min'
+                "timeDifferencexxx": {
                     "$concat": [
                         {"$toString": {
                             "$round": {
@@ -355,6 +456,8 @@ def get_alarmas():
             }
         }
     ]
+
+    #logger.info(f"pipeline: {pipeline}")
 
     # Ejecutar el pipeline de agregación
     cursor = mongo.db.alarm.aggregate(pipeline)
@@ -447,7 +550,7 @@ def export_data(format):
             ]
         },
         {   "_id": 0,
-            "alarmId": 1, "alarmState": 1, "alarmType": 1, 
+            "alarmId": 1, "alarmState": 1, "alarmType": 1, "timeDifference": 1, "timeDifferenceIncident": 1, 
             "inicioOUM": "$omArrivalTimestamp", "alarmRaisedTime": 1, "alarmReportingTime":1, "alarmClearedTime": 1,              
             "TypeNetworkElement": "$networkElement.type", "networkElementId": 1, "clients": 1,
             "timeResolution": 1, "sourceSystemId": 1, "origenId": 1, "sequence": 1            
@@ -464,7 +567,7 @@ def export_data(format):
     df = pd.DataFrame(alarmas)
 
     # Reordenar las columnas
-    df = df[['alarmId', 'alarmState', 'alarmType', 'inicioOUM', 'alarmRaisedTime', 'alarmReportingTime', 'alarmClearedTime', 
+    df = df[['alarmId', 'alarmState', 'alarmType', 'inicioOUM', 'alarmRaisedTime', 'alarmReportingTime', 'alarmClearedTime', 'timeDifference', 'timeDifferenceIncident', 
              'TypeNetworkElement', 'networkElementId', 'clients', 'timeResolution', 'sourceSystemId', 'origenId', 'sequence']]
 
     fecha_actual = datetime.now(buenos_aires_tz).strftime('%Y%m%d%H%M%S')

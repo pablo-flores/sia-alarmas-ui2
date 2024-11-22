@@ -193,7 +193,7 @@ def get_alarmas():
     search_value = request.args.get('search[value]', '').strip()
 
     # Obtener información de ordenamiento
-    order_column_index = request.args.get('order[0][column]', '7')  # Por defecto, omArrivalTimestamp
+    order_column_index = request.args.get('order[0][column]', '8')  # Por defecto, omArrivalTimestamp
     order_direction = request.args.get('order[0][dir]', 'desc')  # Por defecto, descendente
 
     # Mapeo de índices de columna a campos de la base de datos
@@ -205,13 +205,14 @@ def get_alarmas():
         '4': 'alarmRaisedTime',
         '5': 'alarmClearedTime',
         '6': 'alarmReportingTime',
-        '7': 'omArrivalTimestamp',
-        '8': 'timeDifferenceNumeric',  # Campo calculado numérico
-        '9': 'TypeNetworkElement',
-        '10': 'networkElementId',
-        '11': 'clients',
-        '12': 'timeResolution',
-        '13': 'sequence'
+        '7': 'timeDifferenceNumericIncident', # Campo calculado numérico       
+        '8': 'omArrivalTimestamp',
+        '9': 'timeDifferenceNumeric',  # Campo calculado numérico
+        '10': 'TypeNetworkElement',
+        '11': 'networkElementId',
+        '12': 'clients',
+        '13': 'timeResolution',
+        '14': 'sequence'
     }
 
     # Determinar el campo de ordenamiento y la dirección
@@ -236,6 +237,8 @@ def get_alarmas():
                 {"omArrivalTimestamp": search_regex},
                 {"alarmRaisedTime": search_regex},
                 {"alarmClearedTime": search_regex},
+                {"timeDifference": {"$regex": search_value, "$options": "i"}},
+                {"timeDifferenceIncident": {"$regex": search_value, "$options": "i"}},
                 {"alarmReportingTime": search_regex},
                 {"TypeNetworkElement": search_regex},
                 {"timeResolution": {"$regex": search_value, "$options": "i"}},
@@ -279,6 +282,29 @@ def get_alarmas():
                         ]
                     }
                 },
+                # Calcular 'timeDifferenceIncident' como entero
+                "timeDifferenceNumericIncident": {
+                    "$round": {
+                        "$divide": [
+                            {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                            60000  # Convertir milisegundos a minutos
+                        ]
+                    }
+                },
+                # Formatear 'timeDifference' como cadena con 'min'
+                "timeDifferenceIncident": {
+                    "$concat": [
+                        {"$toString": {
+                            "$round": {
+                                "$divide": [
+                                    {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                                    60000
+                                ]
+                            }
+                        }},
+                        "min"
+                    ]
+                },                                
                 # Formatear 'timeDifference' como cadena con 'min'
                 "timeDifference": {
                     "$concat": [
@@ -323,7 +349,9 @@ def get_alarmas():
                 "alarmReportingTime": 1,
                 "sequence": 1,
                 "timeDifference": 1,        # Formateado para visualización
-                "timeDifferenceNumeric": 1  # Campo numérico para ordenación
+                "timeDifferenceNumeric": 1,  # Campo numérico para ordenación
+                "timeDifferenceIncident": 1,        # Formateado para visualización
+                "timeDifferenceNumericIncident": 1  # Campo numérico para ordenación                
             }
         }
     ]
@@ -351,34 +379,39 @@ def get_alarmas():
         else:
             alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
 
-        # Procesar 'origenId'
-        origen_id = alarma.get('origenId', '')
-        if len(origen_id) == 24:
-            alarma['origenId'] = f"FMS {origen_id}"
-        elif len(origen_id) in [10, 13]:
-            alarma['origenId'] = f"FMC {origen_id}"
-        elif origen_id:
-            alarma['origenId'] = f"ICD {origen_id}"
-        else:
-            alarma['origenId'] = '-'
+            # Procesar 'origenId'
+            origen_id = alarma.get('origenId', '')
+            if len(origen_id) == 24:
+                alarma['origenId'] = f"FMS {origen_id}"
+            elif len(origen_id) in [10, 13]:
+                alarma['origenId'] = f"FMC {origen_id}"
+            elif len(origen_id) in [8, 9]:
+                alarma['origenId'] = f"ICD {origen_id}"            
+            elif origen_id:
+                alarma['origenId'] = f"    {origen_id}"
+            else:
+                alarma['origenId'] = '-'
 
-        # Procesar 'alarmId'
-        alarm_id = alarma.get('alarmId', '')
-        if len(alarm_id) == 24:
-            alarma['alarmId'] = f"FMS {alarm_id}"
-        elif len(alarm_id) in [10, 13]:
-            alarma['alarmId'] = f"FMC {alarm_id}"
-        elif alarm_id:
-            alarma['alarmId'] = f"ICD {alarm_id}"
-        else:
-            alarma['alarmId'] = '-'
+            # Procesar 'alarmId'
+            alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
+            if len(alarm_id) == 24:
+                alarma['alarmId'] = f"FMS {alarm_id}"
+            elif len(alarm_id) in [10, 13]:
+                alarma['alarmId'] = f"FMC {alarm_id}"
+            elif len(alarm_id) in [8, 9]:
+                alarma['alarmId'] = f"ICD {alarm_id}"            
+            elif alarm_id:
+                alarma['alarmId'] = f"    {alarm_id}"
+            else:
+                alarma['alarmId'] = '-'
 
-        # 'timeDifference' ya está formateado en la etapa de agregación
-        # 'timeDifferenceNumeric' es para referencia y ordenación
+            # 'timeDifference' ya está formateado en la etapa de agregación
+            # 'timeDifferenceNumeric' es para referencia y ordenación
 
-        # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
-        if alarma.get('alarmId') == alarma.get('origenId'):
-            alarma['origenId'] = '-'
+            # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
+            if alarma.get('alarmId') == alarma.get('origenId'):
+                alarma['origenId'] = '-'
+
 
 
         alarmas.append(alarma)

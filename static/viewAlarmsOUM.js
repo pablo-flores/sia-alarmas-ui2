@@ -137,6 +137,7 @@ document.getElementById('download-csv').addEventListener('click', async function
             "alarmRaisedTime",
             "alarmClearedTime",
             "alarmReportingTime",
+            "timeDifferenceIncident",
             "inicioOUM",
             "timeDifference",
             "TypeNetworkElement",
@@ -157,6 +158,7 @@ document.getElementById('download-csv').addEventListener('click', async function
                 `"${alarm.alarmRaisedTime}"`,
                 `"${alarm.alarmClearedTime}"`,
                 `"${alarm.alarmReportingTime}"`,
+                `"${alarm.timeDifferenceIncident}"`,                
                 `"${alarm.inicioOUM}"`,
                 `"${alarm.timeDifference}"`,
                 `"${alarm.TypeNetworkElement}"`,
@@ -256,6 +258,7 @@ $(document).ready(function() {
             { "data": "alarmRaisedTime" },
             { "data": "alarmClearedTime" },
             { "data": "alarmReportingTime" },
+            { "data": "timeDifferenceIncident" },            
             { "data": "inicioOUM" },
             { "data": "timeDifference" },
             { "data": "TypeNetworkElement" },
@@ -377,13 +380,25 @@ $(document).ready(function() {
                 }
             },
             {
-                "targets": 7, // inicioOUM
+                "targets": 7, // timeDifferenceIncident
+                "type": "num",
+                "orderable": true,
+                "render": function(data, type) {
+                    if (type === 'display') {
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
+                    }
+                    return data;
+                },
+                "orderDataType": "custom-num-sort"
+            },              
+            {
+                "targets": 8, // inicioOUM
                 "render": function (data) {
                     return `<div style="text-align: center;">${data}</div>`;
                 }
             },
             {
-                "targets": 8, // timeDifference
+                "targets": 9, // timeDifference
                 "type": "num",
                 "orderable": true,
                 "render": function(data, type) {
@@ -395,26 +410,26 @@ $(document).ready(function() {
                 "orderDataType": "custom-num-sort"
             },                      
             {
-                "targets": 9, // TypeNetworkElement
+                "targets": 10, // TypeNetworkElement
                 "render": function (data) {
                     return `<div style="text-align: left;">${data}</div>`;
                 }
             },
             {
-                "targets": 10, // networkElementId
+                "targets": 11, // networkElementId
                 "render": function (data) {
                     return `<div style="text-align: left;">${data}</div>`;
                 }
             },
             {
-                "targets": 11, // clients
+                "targets": 12, // clients
                 "type": "num",
                 "render": function (data) {
                     return `<div style="text-align: right;">${data}</div>`;
                 }
             },
             {
-                "targets": 12, // timeResolution
+                "targets": 13, // timeResolution
                 "type": "num",
                 "render": function(data, type, row) {
                     if (type === 'sort' || type === 'type') {
@@ -452,7 +467,12 @@ $(document).ready(function() {
                 var tooltip = $(this).find('.tooltip-text');
                 tooltip.css('visibility', 'hidden').css('opacity', '0');
             });
-
+            $('.dataTables_processing').css({
+                'background-color': '#007bff',  // Cambia este color
+                'color': '#000',                // Color del texto
+                'padding': '10px',              // Opcional: espaciado
+                'border-radius': '5px'          // Opcional: redondeo de bordes
+            });
             // Reiniciar la barra de progreso
             resetProgressBar();
             updateLocalTime();

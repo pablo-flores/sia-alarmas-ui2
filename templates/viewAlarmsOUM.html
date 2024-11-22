@@ -79,20 +79,23 @@
                 <div class="grid-itemRight">Tipo de Alarma:</div>
                 <div class="grid-item">Tipo de alarma (INDISPONIBILIDAD, DEGRADACION y TAREA_PROGRAMADA...).</div>                
 
-                <div class="grid-itemRight">T.Inicio Alarma:</div>  
+                <div class="grid-itemRight">T.Inicio Detección:</div>  
                 <div class="grid-item">Fecha y hora de 1er evento de Alarma (Fault) o creación manual.</div>
                 
                 <div class="grid-itemRight">T.Fin Alarma:</div>     
                 <div class="grid-item">Fecha y hora que Fault desafectó la alarma, muestra los últimos {{ days_configMap }} días.</div>
                 
-                <div class="grid-itemRight">T.Creacion TT:</div>
-                <div class="grid-item">Fecha y hora que se reporto para el Trouble Ticket.</div>
+                <div class="grid-itemRight">T.Creacion Incidente:</div>
+                <div class="grid-item">Fecha y hora que se reporto para el Incidente.</div>
+                
+                <div class="grid-itemRight">T-to Incidente:</div>
+                <div class="grid-item">Diferencia minutos entre T.Creacion Incidente y T.Inicio Detección.</div>                
                 
                 <div class="grid-itemRight">T.Inicio Outage:</div>
                 <div class="grid-item">Fecha y hora que llegó la afectación al Outage Manager.</div>
 
-                <div class="grid-itemRight">Dif.Inicio Alarma vs Inicio Outage:</div>
-                <div class="grid-item">Diferencia minutos entre T.Inicio Outage y T.Inicio Alarma.</div>                
+                <div class="grid-itemRight">T-to Outage:</div>
+                <div class="grid-item">Diferencia minutos entre T.Inicio Outage y T.Inicio Detección.</div>                
                 
                 <div class="grid-itemRight">Tipo Elemento Red:</div>
                 <div class="grid-item">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto de recursos asociados a un nombre, para facilitar su gestión).</div>
@@ -109,25 +112,26 @@
             
         </div>
 
-        
+     
         <div class="page-content" style="position: relative; top: -10px;">
 
             <table id="alarmTable" style="display:none; margin: 0 3px; width: calc(100% - 6px);">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Primer Id Outage</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Incidente</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Estado</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo de Alarma</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Alarma</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Fin Alarma</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Creacion TT</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">T.Inicio Outage</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Dif.Inicio Alarma vs Inicio Outage</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Tipo Elemento Red</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">Id Elemento Red</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">#Cli</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal;">TER</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Primer Id Outage</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Incidente</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Estado</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo de Alarma</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Detección</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Alarma</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Creacion Incidente</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Incidente</th>                        
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Outage</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Outage</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elemento Red</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">TER</th>
                     </tr>       
                 </thead>
                         
@@ -136,7 +140,7 @@
                 </tbody>
             </table>
         </div>    
-
+    
 
         <!-- Mensaje de "Espere..." oculto al principio -->
         <div id="loading-message" style="display: none; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 20px; border-radius: 10px; z-index: 9999;">

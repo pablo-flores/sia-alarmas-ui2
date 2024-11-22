@@ -228,6 +228,7 @@ body, html {
     font-size: 18px;
     font-weight: bold;
     text-align: center;
+    background-color: #007bff; /* Cambia este color por el que prefieras */
 }
 
 /* Estilo moderno para el campo de búsqueda de DataTables */
@@ -816,3 +817,6 @@ hr {
     text-decoration: none; /* Sin subrayado al pasar el mouse */
     background-color: #f0f0f0; /* Cambio de fondo al pasar el mouse */
 }
+
+/***********************************************************/
+

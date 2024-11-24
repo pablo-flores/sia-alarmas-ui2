@@ -408,7 +408,7 @@ $(document).ready(function() {
                 "orderable": true,
                 "render": function(data, type) {
                     if (type === 'display') {
-                        if (data.length > 9) {
+                        if (data.length > 10) {
                             data = data.split(':')[0] + ' min';
                         }
                         const style = data.includes('-') ? 'color: red;' : '';

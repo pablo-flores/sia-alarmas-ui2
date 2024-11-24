@@ -275,25 +275,22 @@ def get_alarmas():
                         "else": "$alarmState"
                     }
                 },
-                # Calcular 'timeDifferenceNumeric' como entero
+                # Calcular 'timeDifferenceNumeric' sin redondeo
                 "timeDifferenceNumeric": {
-                    "$round": {
-                        "$divide": [
-                            {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
-                            60000  # Convertir milisegundos a minutos
-                        ]
-                    }
+                    "$divide": [
+                        {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                        60000  # Convertir milisegundos a minutos
+                    ]
                 },
-                # Calcular 'timeDifferenceNumericIncident' como entero
+                # Calcular 'timeDifferenceNumericIncident' sin redondeo
                 "timeDifferenceNumericIncident": {
-                    "$round": {
-                        "$divide": [
-                            {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
-                            60000  # Convertir milisegundos a minutos
-                        ]
-                    }
+                    "$divide": [
+                        {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                        60000  # Convertir milisegundos a minutos
+                    ]
                 },
-                # Formatear 'timeDifference' como cadena con 'min'
+
+                # Formatear 'timeDifference' como cadena con 'min'  parte visual
                 "timeDifferenceIncident": {
                     "$concat": [
                         # Determinar si el tiempo es negativo

@@ -260,9 +260,9 @@ $(document).ready(function() {
             { "data": "alarmRaisedTime" },
             { "data": "alarmClearedTime" },
             { "data": "alarmReportingTime" },
-            { "data": "timeDifferenceIncident" },            
             { "data": "inicioOUM" },
             { "data": "timeDifference" },
+            { "data": "timeDifferenceIncident" },                        
             { "data": "TypeNetworkElement" },
             { "data": "networkElementId" },
             { "data": "clients" },
@@ -356,8 +356,38 @@ $(document).ready(function() {
             },
             {
                 "targets": 3, // alarmType
-                "render": function (data) {
-                    return `<div style="text-align: center;">${data}</div>`;
+                "render": function(data, type, row) {
+                    let displayValue = data;
+                    switch(data) {
+                        case 'INDISPONIBILIDAD':
+                            displayValue = 'INDISP';
+                            break;
+                        case 'DEGRADACION':
+                            displayValue = 'DEGRAD';
+                            break;
+                        case 'TAREA_PROGRAMADA_CON_AFECTACION_DE_SERVICIO':
+                            displayValue = 'TAREA_CAF';
+                            break;
+                        case 'TAREA_PROGRAMADA_SIN_AFECTACION_DE_SERVICIO':
+                            displayValue = 'TAREA_SAF';
+                            break;
+                    }
+
+                    
+
+                    if (type === 'display') {
+                        return `
+                            <div class="tooltip-cell" style="text-align: left;" data-alarmid="${displayValue}">
+                                ${displayValue}
+                                <span class="tooltip-text">                           
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">Tipo Incidente:</span>
+                                        <span class="tooltip-value">${data}</span>
+                                    </div>                                 
+                                </span>
+                            </div>`;
+                    }
+                    return data;
                 }
             },            
             {
@@ -380,37 +410,44 @@ $(document).ready(function() {
                 "render": function (data) {
                     return `<div style="text-align: center;">${data}</div>`;
                 }
-            },
+            },         
             {
-                "targets": 7, // timeDifferenceIncident
-                "type": "num",
-                "orderable": true,
-                "render": function(data, type) {
-                    if (type === 'display') {
-                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
-                    }
-                    return data;
-                },
-                "orderDataType": "custom-num-sort"
-            },              
-            {
-                "targets": 8, // inicioOUM
+                "targets": 7, // inicioOUM
                 "render": function (data) {
                     return `<div style="text-align: center;">${data}</div>`;
                 }
             },
             {
-                "targets": 9, // timeDifference
+                "targets": 8, // timeDifference
                 "type": "num",
                 "orderable": true,
                 "render": function(data, type) {
                     if (type === 'display') {
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
+                        }
                         return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
                     }
                     return data;
                 },
                 "orderDataType": "custom-num-sort"
-            },                      
+            },                          
+            {
+                "targets": 9, // timeDifferenceIncident
+                "type": "num",
+                "orderable": true,
+                "render": function(data, type) {
+                    if (type === 'display') {
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
+                        }
+                        const style = data.includes('-') ? 'color: red;' : '';
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                    }
+                    return data;
+                },
+                "orderDataType": "custom-num-sort"
+            },                                     
             {
                 "targets": 10, // TypeNetworkElement
                 "render": function (data) {

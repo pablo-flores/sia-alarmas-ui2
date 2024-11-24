@@ -193,7 +193,7 @@ def get_alarmas():
     search_value = request.args.get('search[value]', '').strip()
 
     # Obtener información de ordenamiento
-    order_column_index = request.args.get('order[0][column]', '8')  # Por defecto, omArrivalTimestamp
+    order_column_index = request.args.get('order[0][column]', '7')  # Por defecto, omArrivalTimestamp
     order_direction = request.args.get('order[0][dir]', 'desc')  # Por defecto, descendente
 
     # Mapeo de índices de columna a campos de la base de datos
@@ -205,9 +205,9 @@ def get_alarmas():
         '4': 'alarmRaisedTime',
         '5': 'alarmClearedTime',
         '6': 'alarmReportingTime',
-        '7': 'timeDifferenceIncident', # Campo calculado numérico       
-        '8': 'omArrivalTimestamp',
-        '9': 'timeDifference',  # Campo calculado numérico
+        '7': 'omArrivalTimestamp',
+        '8': 'timeDifferenceNumeric',  # Campo calculado numérico
+        '9': 'timeDifferenceNumericIncident', # Campo calculado numérico               
         '10': 'TypeNetworkElement',
         '11': 'networkElementId',
         '12': 'clients',
@@ -237,8 +237,8 @@ def get_alarmas():
                 {"omArrivalTimestamp": search_regex},
                 {"alarmRaisedTime": search_regex},
                 {"alarmClearedTime": search_regex},
-                {"timeDifference": search_regex},
-                {"timeDifferenceIncident": search_regex},
+                {"timeDifferenceNumeric": search_regex},
+                {"timeDifferenceNumericIncident": search_regex},
                 {"alarmReportingTime": search_regex},
                 {"networkElement.type": search_regex},   
                 {"timeResolution": search_regex},
@@ -284,7 +284,7 @@ def get_alarmas():
                         ]
                     }
                 },
-                # Calcular 'timeDifferenceIncident' como entero
+                # Calcular 'timeDifferenceNumericIncident' como entero
                 "timeDifferenceNumericIncident": {
                     "$round": {
                         "$divide": [
@@ -293,29 +293,67 @@ def get_alarmas():
                         ]
                     }
                 },
-                                # Formatear 'timeDifference' como cadena con 'min'
-
+                # Formatear 'timeDifference' como cadena con 'min'
                 "timeDifferenceIncident": {
                     "$concat": [
-                        # Convertir los minutos a string
-                        { "$toString": {
-                            "$floor": {
-                                "$divide": [
+                        # Determinar si el tiempo es negativo
+                        {
+                            "$cond": [
+                                { "$lt": [
                                     { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
-                                    60000
-                                ]
-                            }
-                        }},
+                                    0
+                                ]},
+                                "-",  # Si es negativo, agregar "-"
+                                ""    # Si no, dejar vacío
+                            ]
+                        },
+                        # Convertir los minutos a string con dos dígitos si es necesario
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                            60000
+                                        ]}
+                                    },
+                                    10
+                                ]},
+                                # Si los minutos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "0",
+                                    { "$toString": {
+                                        "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                                60000
+                                            ]
+                                        }
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                            60000
+                                        ]
+                                    }
+                                }}
+                            ]
+                        },
                         ":",
                         # Convertir los segundos restantes a string con dos dígitos
                         {
                             "$cond": [
                                 { "$lt": [
                                     { "$mod": [
-                                        { "$divide": [
-                                            { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
-                                            1000
-                                        ]},
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                                1000
+                                            ]}
+                                        },
                                         60
                                     ]},
                                     10
@@ -325,10 +363,12 @@ def get_alarmas():
                                     "0",
                                     { "$toString": {
                                         "$mod": [
-                                            { "$divide": [
-                                                { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
-                                                1000
-                                            ]},
+                                            { "$floor": {
+                                                "$divide": [
+                                                    { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                                    1000
+                                                ]}
+                                            },
                                             60
                                         ]
                                     }}
@@ -336,10 +376,12 @@ def get_alarmas():
                                 # Si no, usa el valor tal cual
                                 { "$toString": {
                                     "$mod": [
-                                        { "$divide": [
-                                            { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] },
-                                            1000
-                                        ]},
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": ["$alarmReportingTime", "$alarmRaisedTime"] }},
+                                                1000
+                                            ]}
+                                        },
                                         60
                                     ]
                                 }}
@@ -347,7 +389,8 @@ def get_alarmas():
                         },
                         " min"
                     ]
-                },
+                }
+,
                 "timeDifference": {
                     "$concat": [
                         # Convertir los minutos a string

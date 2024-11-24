@@ -203,11 +203,11 @@ def get_alarmas():
         '2': 'alarmState',
         '3': 'alarmType',
         '4': 'alarmRaisedTime',
-        '5': 'alarmClearedTime',
-        '6': 'alarmReportingTime',
+        '5': 'alarmReportingTime',
+        '6': 'timeDifferenceNumericIncident', # Campo calculado numérico              
         '7': 'omArrivalTimestamp',
         '8': 'timeDifferenceNumeric',  # Campo calculado numérico
-        '9': 'timeDifferenceNumericIncident', # Campo calculado numérico               
+        '9': 'alarmClearedTime',                 
         '10': 'TypeNetworkElement',
         '11': 'networkElementId',
         '12': 'clients',

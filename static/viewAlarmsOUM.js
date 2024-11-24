@@ -137,11 +137,11 @@ document.getElementById('download-csv').addEventListener('click', async function
             "alarmState",
             "alarmType",
             "alarmRaisedTime",
-            "alarmClearedTime",
             "alarmReportingTime",
             "timeDifferenceIncident",
             "inicioOUM",
             "timeDifference",
+            "alarmClearedTime",            
             "TypeNetworkElement",
             "networkElementId",
             "clients",
@@ -158,11 +158,11 @@ document.getElementById('download-csv').addEventListener('click', async function
                 `"${alarm.alarmState}"`,
                 `"${alarm.alarmType}"`,
                 `"${alarm.alarmRaisedTime}"`,
-                `"${alarm.alarmClearedTime}"`,
                 `"${alarm.alarmReportingTime}"`,
                 `"${alarm.timeDifferenceIncident}"`,                
                 `"${alarm.inicioOUM}"`,
                 `"${alarm.timeDifference}"`,
+                `"${alarm.alarmClearedTime}"`,                
                 `"${alarm.TypeNetworkElement}"`,
                 `"${alarm.networkElementId}"`,
                 `"${alarm.clients}"`,
@@ -258,11 +258,11 @@ $(document).ready(function() {
             { "data": "alarmState" },
             { "data": "alarmType" },
             { "data": "alarmRaisedTime" },
-            { "data": "alarmClearedTime" },
             { "data": "alarmReportingTime" },
+            { "data": "timeDifferenceIncident" },                                    
             { "data": "inicioOUM" },
             { "data": "timeDifference" },
-            { "data": "timeDifferenceIncident" },                        
+            { "data": "alarmClearedTime" },            
             { "data": "TypeNetworkElement" },
             { "data": "networkElementId" },
             { "data": "clients" },
@@ -397,20 +397,27 @@ $(document).ready(function() {
                 }
             },
             {
-                "targets": 5, // alarmClearedTime
-                "render": function (data, type) {
-                    if (type === 'display') {
-                        return `<div style="text-align: center;">${data}</div>`;
-                    }
-                    return data;
-                }
-            },
-            {
-                "targets": 6, // alarmReportingTime
+                "targets": 5, // alarmReportingTime
                 "render": function (data) {
                     return `<div style="text-align: center;">${data}</div>`;
                 }
-            },         
+            },            
+            {
+                "targets": 6, // timeDifferenceIncident
+                "type": "num",
+                "orderable": true,
+                "render": function(data, type) {
+                    if (type === 'display') {
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
+                        }
+                        const style = data.includes('-') ? 'color: red;' : '';
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                    }
+                    return data;
+                },
+                "orderDataType": "custom-num-sort"
+            },             
             {
                 "targets": 7, // inicioOUM
                 "render": function (data) {
@@ -433,21 +440,14 @@ $(document).ready(function() {
                 "orderDataType": "custom-num-sort"
             },                          
             {
-                "targets": 9, // timeDifferenceIncident
-                "type": "num",
-                "orderable": true,
-                "render": function(data, type) {
+                "targets": 9, // alarmClearedTime
+                "render": function (data, type) {
                     if (type === 'display') {
-                        if (data.length > 9) {
-                            data = data.split(':')[0] + ' min';
-                        }
-                        const style = data.includes('-') ? 'color: red;' : '';
-                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                        return `<div style="text-align: center;">${data}</div>`;
                     }
                     return data;
-                },
-                "orderDataType": "custom-num-sort"
-            },                                     
+                }
+            },                                    
             {
                 "targets": 10, // TypeNetworkElement
                 "render": function (data) {

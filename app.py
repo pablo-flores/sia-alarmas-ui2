@@ -318,7 +318,7 @@ def get_alarmas():
                                 ]},
                                 # Si los minutos son menores que 10, agrega un 0 delante
                                 { "$concat": [
-                                    "0",
+                                    "",
                                     { "$toString": {
                                         "$floor": {
                                             "$divide": [
@@ -443,21 +443,6 @@ def get_alarmas():
                             ]
                         },
                         " min"
-                    ]
-                },
-
-                # Formatear 'timeDifference' como cadena con 'min'
-                "timeDifferencexxx": {
-                    "$concat": [
-                        {"$toString": {
-                            "$round": {
-                                "$divide": [
-                                    {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
-                                    60000
-                                ]
-                            }
-                        }},
-                        "min"
                     ]
                 }
             }

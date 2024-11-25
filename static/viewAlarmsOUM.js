@@ -408,10 +408,10 @@ $(document).ready(function() {
                 "orderable": true,
                 "render": function(data, type) {
                     if (type === 'display') {
-                        if (data.length > 10) {
+                        if (data.length > 9) {
                             data = data.split(':')[0] + ' min';
                         }
-                        const style = data.includes('-') ? 'color: red;' : '';
+                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
                         return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                     }
                     return data;
@@ -429,11 +429,13 @@ $(document).ready(function() {
                 "type": "num",
                 "orderable": true,
                 "render": function(data, type) {
-                    if (type === 'display') {
+                    if (type === 'display') {   
                         if (data.length > 9) {
                             data = data.split(':')[0] + ' min';
                         }
-                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
+                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
+                        //return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                     }
                     return data;
                 },

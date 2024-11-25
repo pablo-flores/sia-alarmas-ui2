@@ -522,16 +522,8 @@ def get_alarmas():
 
             # Procesar 'alarmId'
             alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
-            if len(alarm_id) == 24:
-                alarma['alarmId'] = f"FMS {alarm_id}"
-            elif len(alarm_id) in [10, 13]:
-                alarma['alarmId'] = f"FMC {alarm_id}"
-            elif len(alarm_id) in [8, 9]:
-                alarma['alarmId'] = f"ICD {alarm_id}"            
-            elif alarm_id:
-                alarma['alarmId'] = f"    {alarm_id}"
-            else:
-                alarma['alarmId'] = '-'
+            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
+
 
             # 'timeDifference' ya está formateado en la etapa de agregación
             # 'timeDifferenceNumeric' es para referencia y ordenación
@@ -592,7 +584,7 @@ def export_data(format):
     df = pd.DataFrame(alarmas)
 
     # Reordenar las columnas
-    df = df[['alarmId', 'alarmState', 'alarmType', 'inicioOUM', 'alarmRaisedTime', 'alarmReportingTime', 'alarmClearedTime', 'timeDifference', 'timeDifferenceIncident', 
+    df = df[['alarmId', 'alarmState', 'alarmType', 'inicioOUM', 'alarmRaisedTime', 'alarmReportingTime', 'timeDifference', 'timeDifferenceIncident', 'alarmClearedTime',
              'TypeNetworkElement', 'networkElementId', 'clients', 'timeResolution', 'sourceSystemId', 'origenId', 'sequence']]
 
     fecha_actual = datetime.now(buenos_aires_tz).strftime('%Y%m%d%H%M%S')

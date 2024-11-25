@@ -522,6 +522,7 @@ def get_alarmas():
 
             # Procesar 'alarmId'
             alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
+            sourceSystemId = alarma.get('sourceSystemId', '')
             alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
 
 

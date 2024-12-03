@@ -520,8 +520,17 @@ $(document).ready(function() {
             {
                 "targets": 12, // clients
                 "type": "num",
-                "render": function (data) {
-                    return `<div style="text-align: right;">${data}</div>`;
+                "render": function (data, type, row) {
+                    
+                    var displayData = (typeof data !== 'undefined' && data !== null) ? data : 0;
+
+                    // Asegurar que displayData sea numérico
+                    displayData = parseInt(displayData, 10);
+                    if (isNaN(displayData)) {
+                        displayData = 0;
+                    }
+
+                    return `<div style="text-align: right;">${displayData}</div>`;
                 }
             },
             {

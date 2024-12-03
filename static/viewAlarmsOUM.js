@@ -521,7 +521,7 @@ $(document).ready(function() {
                 "targets": 12, // clients
                 "type": "num",
                 "render": function (data, type, row) {
-                    
+
                     var displayData = (typeof data !== 'undefined' && data !== null) ? data : 0;
 
                     // Asegurar que displayData sea numérico
@@ -542,7 +542,17 @@ $(document).ready(function() {
                     }
                     return data !== undefined ? `<div style="text-align: right;">${data}</div>` : '';
                 }
-            }            
+            },  
+            {
+                "targets": 14, // plays
+                "type": "num",
+                "render": function(data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data) || 0;
+                    }
+                    return data !== undefined ? `<div style="text-align: right;">${data}</div>` : '';
+                }
+            }                      
         ],        
         "language": {
             "lengthMenu": "Mostrar _MENU_ entradas",

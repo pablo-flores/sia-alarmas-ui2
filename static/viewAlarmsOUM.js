@@ -486,7 +486,7 @@ $(document).ready(function() {
                             }).join(''); // Unir con saltos de línea HTML
             
                             if (row.plays.length === 0) {formattedPlays='Sin información'}
-                            
+
                             // Retornar el HTML con el tooltip formateado
                             return `
                                 <div class="tooltip-cell" style="text-align: left;" data-alarmid="${data}">${data}
@@ -500,7 +500,7 @@ $(document).ready(function() {
                                     </div>
                                 </div>`;
                         } else {
-                            return 'No disponible';
+                            return `<div style="text-align: right;">${data}</div>`;
                         }
                     }
                     return data;

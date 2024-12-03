@@ -500,7 +500,17 @@ $(document).ready(function() {
                                     </div>
                                 </div>`;
                         } else {
-                            return `<div style="text-align: right;">${data}</div>`;
+                            return `
+                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${data}">${data}
+                                    <div class="tooltip-text">
+                                        <div class="tooltip-title">Cantidad de PLAYs afectados:</div>
+                                        <table class="tooltip-table">
+                                            <tbody>
+                                                Sin información
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>`;
                         }
                     }
                     return data;

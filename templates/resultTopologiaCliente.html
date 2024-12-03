@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topología de Cliente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='siaAlarm/stylesGrafo.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="https://d3js.org/d3.v6.min.js"></script> <!-- Agregar D3.js -->
+</head>
+<body>
+
+    <div class="service-impact-analysis">
+        <img src="{{ url_for('static', filename='telecom.gif') }}" alt="Telecom Logo" class="logo">
+        Service Impact Analysis
+    </div>
+
+    <h2>Topología de Cliente hasta el HUB</h2>
+
+    <div class="header">
+        <p>Telecom Argentina &copy; 2024</p>
+    </div>
+
+    <div id="graph"></div> <!-- Contenedor del gráfico -->
+
+    <script>
+        // Datos recibidos desde el backend
+        const graphData = {
+            nodes: {{ nodes|tojson }},
+            links: {{ links|tojson }}
+        };
+
+        // Ajustamos el tamaño del SVG dinámicamente según el tamaño de la ventana
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Configuramos el SVG y añadimos un grupo para el zoom y paneo
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height - (height / 4))
+            .call(d3.zoom().scaleExtent([0.5, 5])
+                .on("zoom", function (event) {
+                    svgGroup.attr("transform", event.transform);
+                }))
+            .append("g");
+
+        const svgGroup = svg.append("g");
+
+        // Definimos un filtro para la sombra
+        svg.append("defs")
+            .append("filter")
+            .attr("id", "drop-shadow")
+            .attr("height", "130%")
+            .append("feDropShadow")
+            .attr("dx", 2)
+            .attr("dy", 2)
+            .attr("stdDeviation", 3)
+            .attr("flood-color", "#000")
+            .attr("flood-opacity", 0.3);
+
+        // Escala de colores
+        const colorScale = d3.scaleOrdinal()
+            .domain(graphData.nodes.map(d => d.id))
+            .range([
+                "#b2182b", "#f46d43", "#e78c2a", "#ffd92f", "#f48c42", "#d4d700",
+                "#273746", "#a6d854", "#66a61e", "#5aae61", "#1b7837", "#4dacb6",
+                "#3288bd", "#2166ac", "#4575b4", "#313695", "#2c7bb6", "#6c71c4",
+                "#8e44ad", "#9b59b6", "#c49cc7", "#db7093", "#d08159", "#d9c2a3",
+                "#808080", "#5a5a5a", "#34495e", "#1c2833", "#17202a"
+            ]);
+
+        // Añadir gradiente radial para el efecto 3D
+        svg.append("defs").selectAll("radialGradient")
+            .data(graphData.nodes)
+            .enter()
+            .append("radialGradient")
+            .attr("id", d => `grad3d-${d.id}`)
+            .attr("cx", "50%")
+            .attr("cy", "50%")
+            .attr("r", "50%")
+            .append("stop")
+            .attr("offset", "0%")
+            .attr("style", "stop-color: white; stop-opacity: 0.9");
+
+        svg.selectAll("radialGradient")
+            .append("stop")
+            .attr("offset", "100%")
+            .attr("style", d => `stop-color: ${colorScale(d.id)}; stop-opacity: 1`);
+
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide().radius(100))
+            .force("x", d3.forceX(width / 2).strength(0.2))
+            .force("y", d3.forceY(height / 2).strength(0.8))
+            .on("tick", ticked);
+
+        // Definimos la animación para el movimiento en las líneas
+        function animateLine(line) {
+            line.attr("stroke-dasharray", "5,5")
+                .attr("stroke-dashoffset", 0)
+                .transition()
+                .duration(10000)
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", -200);
+        }
+
+        // Dibujamos las relaciones (enlaces)
+        const link = svgGroup.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter()
+            .append("line")
+            .attr("stroke-width", 4)
+            .attr("stroke", "#999")
+            .style("filter", "url(#drop-shadow)")
+            .call(animateLine);
+
+        // Función de arrastre de nodos
+        const drag = d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded);
+
+        // Dibujamos los nodos con sombra, efecto 3D y borde fino
+        const node = svgGroup.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(graphData.nodes)
+            .enter()
+            .append("circle")
+            .attr("r", 30)
+            .attr("fill", d => `url(#grad3d-${d.id})`)
+            .attr("stroke", d => colorScale(d.id) + 500)
+            .attr("stroke-width", 5)
+            .style("filter", "url(#drop-shadow)")
+            .call(drag)
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", 35)
+                    .attr("stroke-width", 6)
+                    .attr("stroke", colorScale(d.id));
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", 30)
+                    .attr("stroke-width", 5)
+                    .attr("stroke", d => colorScale(d.id) + 500);
+            });
+
+        // Añadimos el texto sobre los nodos
+        const labels = svgGroup.append("g")
+            .attr("class", "labels")
+            .selectAll("text")
+            .data(graphData.nodes)
+            .enter()
+            .append("text")
+            .attr("dy", -15)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("font-weight", "bold")
+            .attr("fill", "#000")
+            .text(d => d.properties.ID);
+
+        // Añadimos el TAG_FMS dentro del nodo
+        const tagFMS = svgGroup.append("g")
+            .attr("class", "tagFMS")
+            .selectAll("text")
+            .data(graphData.nodes)
+            .enter()
+            .append("text")
+            .attr("dx", 0)
+            .attr("dy", 25)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "9px")
+            .attr("fill", "#333")
+            .text(d => d.properties.TAG_FMS);
+
+        function ticked() {
+            link.attr("x1", d => limitPosition(d.source.x, width))
+                .attr("y1", d => limitPosition(d.source.y, height))
+                .attr("x2", d => limitPosition(d.target.x, width))
+                .attr("y2", d => limitPosition(d.target.y, height));
+
+            node.attr("cx", d => d.x = limitPosition(d.x, width))
+                .attr("cy", d => d.y = limitPosition(d.y, height));
+
+            labels.attr("x", d => d.x = limitPosition(d.x, width))
+                .attr("y", d => d.y = limitPosition(d.y, height) - 25);
+
+            tagFMS.attr("x", d => d.x = limitPosition(d.x, width))
+                .attr("y", d => d.y = limitPosition(d.y, height) + 5);
+        }
+
+        function limitPosition(pos, max) {
+            return Math.max(20, Math.min(max - 20, pos));
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = limitPosition(event.x, width);
+            d.fy = limitPosition(event.y, height);
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth - (window.innerWidth / 8);
+            const newHeight = window.innerHeight - (window.innerHeight / 8);
+            svg.attr("width", newWidth - 1000).attr("height", newHeight - 1000);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+        });
+    </script>
+
+</body>
+</html>

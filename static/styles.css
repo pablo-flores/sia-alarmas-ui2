@@ -369,6 +369,25 @@ input[type="checkbox"]:checked+#expandableDiv {
 }
 
 
+/* Estilos para la tabla dentro del tooltip */
+.tooltip-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tooltip-table th, .tooltip-table td {
+    border: 1px solid #302b2b;
+    padding: 5px;
+    text-align: left;
+    background-color: #333; /* Fondo gris oscuro */
+    color: #fff; /* Texto blanco */
+    font-size: 0.9em; /* Tamaño de letra */
+}
+
+.tooltip-table th {
+    background-color: #333;
+}
+
 /* Mostrar el tooltip al pasar el ratón */
 .tooltip-cell:hover .tooltip-text {
     visibility: visible;
@@ -819,4 +838,7 @@ hr {
 }
 
 /***********************************************************/
+
+
+
 

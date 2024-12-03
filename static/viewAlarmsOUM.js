@@ -62,6 +62,7 @@ document.getElementById('download-excel').addEventListener('click', async functi
             "networkElementId",
             "clients",
             "timeResolution",
+            "plays",
             "sequence"
         ];
         rows.push(headers);
@@ -146,6 +147,7 @@ document.getElementById('download-csv').addEventListener('click', async function
             "networkElementId",
             "clients",
             "timeResolution",
+            "plays",
             "sequence"
         ];
         csv.push(headers.join(","));
@@ -167,6 +169,7 @@ document.getElementById('download-csv').addEventListener('click', async function
                 `"${alarm.networkElementId}"`,
                 `"${alarm.clients}"`,
                 `"${alarm.timeResolution}"`,
+                `"${alarm.plays !== undefined ? alarm.plays : '-'}"`,
                 `"${alarm.sequence !== undefined ? alarm.sequence : '-'}"`
             ];
             csv.push(row.join(","));
@@ -202,7 +205,15 @@ document.addEventListener('keydown', function(event) {
         event.preventDefault();
         document.getElementById('download-csv').click();
     }
+    if (event.ctrlKey && (event.key === 'm' || event.key === 'M')) {
+        event.preventDefault();
+        // Redirigir a formTopologia3D.html usando la ruta del servidor
+        //window.location.href = "{{ url_for('nombre_de_la_ruta_formTopologia3D') }}";
+        //window.location.href = "{{ url_for('form_topologia_3d') }}"; // Flask
+        window.location.href = 'templates/formTopologia3D.html';
+    }
 });
+
 
 /*******************************************************************************/
 
@@ -267,6 +278,7 @@ $(document).ready(function() {
             { "data": "networkElementId" },
             { "data": "clients" },
             { "data": "timeResolution" },
+            { "data": "plays", "visible": false },
             { "data": "sequence", "visible": false }
         ],
         "autoWidth": true,
@@ -456,12 +468,45 @@ $(document).ready(function() {
                     return `<div style="text-align: left;">${data}</div>`;
                 }
             },
+
             {
-                "targets": 11, // networkElementId
-                "render": function (data) {
-                    return `<div style="text-align: left;">${data}</div>`;
+                "targets": 11, // Ahora corresponde a "plays"
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        // Verificar si 'plays' existe y es un array
+
+                        if (Array.isArray(row.plays)) {
+                            // Formatear cada objeto dentro del array 'plays'
+                            let formattedPlays = row.plays.map(item => {
+                                // Obtener la clave y el valor de cada objeto
+                                let key = Object.keys(item)[0];
+                                let value = item[key];
+                                //return `<strong>${value}</strong>&ensp&ensp&ensp${key}`;
+                                return `<tr><td>${value}</td><td>${key}</td></tr>`;
+                            }).join(''); // Unir con saltos de línea HTML
+            
+                            if (row.plays.length === 0) {formattedPlays='Sin información'}
+                            
+                            // Retornar el HTML con el tooltip formateado
+                            return `
+                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${data}">${data}
+                                    <div class="tooltip-text">
+                                        <div class="tooltip-title">Cantidad de PLAYs afectados:</div>
+                                        <table class="tooltip-table">
+                                            <tbody>
+                                                ${formattedPlays}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>`;
+                        } else {
+                            return 'No disponible';
+                        }
+                    }
+                    return data;
                 }
             },
+                       
             {
                 "targets": 12, // clients
                 "type": "num",
@@ -525,6 +570,19 @@ $(document).ready(function() {
 });
 
 /*******************************************************************************/
+//function escapeHtml(text) {
+//    return text
+//        .replace(/&/g, "&amp;")
+//        .replace(/</g, "&lt;")
+//        .replace(/>/g, "&gt;")
+//        .replace(/"/g, "&quot;")
+//        .replace(/'/g, "&#039;");
+//}
+//
+//let jsonString = row.plays ? escapeHtml(JSON.stringify(row.plays, null, 2)) : 'No disponible';
+//return `<pre>${jsonString}</pre>`;
+/*******************************************************************************/
+
 
 // Variables globales para la paginación del modal
 let currentModalPage = 1;

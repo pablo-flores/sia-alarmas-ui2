@@ -170,6 +170,12 @@ def search_alarm():
         "data": data
     })
     
+
+@app.route('/formTopologia3D')
+def form_topologia_3d():
+    return render_template('formTopologia3D.html')
+
+
 # Nueva ruta para obtener las alarmas en formato JSON
 @app.route('/get_alarmas', methods=['GET'])
 def get_alarmas():
@@ -212,7 +218,8 @@ def get_alarmas():
         '11': 'networkElementId',
         '12': 'clients',
         '13': 'timeResolution',
-        '14': 'sequence'
+        '14': 'sequence',
+        '15': 'plays'
     }
 
     # Determinar el campo de ordenamiento y la dirección
@@ -242,7 +249,8 @@ def get_alarmas():
                 {"alarmReportingTime": search_regex},
                 {"networkElement.type": search_regex},   
                 {"timeResolution": search_regex},
-                {"sequence": search_regex}
+                {"sequence": search_regex},
+                {"plays": search_regex}
             ]
         }
 
@@ -474,6 +482,7 @@ def get_alarmas():
                 "alarmClearedTime": 1,
                 "alarmReportingTime": 1,
                 "sequence": 1,
+                "plays": 1,
                 "timeDifference": 1,        # Formateado para visualización
                 "timeDifferenceNumeric": 1,  # Campo numérico para ordenación
                 "timeDifferenceIncident": 1,        # Formateado para visualización

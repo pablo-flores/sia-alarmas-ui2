@@ -1,0 +1,239 @@
+/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    margin: 0px;
+    padding-top: 100px;  /* Asegurar que el contenido comience debajo de la barra fija */
+    height: 100vh;
+    overflow: hidden; /* Esto evita las barras de desplazamiento */
+}
+
+#graph {
+    width: 100vw; /* Vista completa del ancho */
+    height: 100vh; /* Vista completa del alto */
+}
+
+/* Encabezados */
+h1 {
+    text-align: center;
+    color: #0056b3;
+    font-size: 2.5em;
+    margin-top: 0;
+    padding-top: 20px; /* Espacio extra debajo de la barra */
+    font-weight: bold;
+    text-transform: none;
+}
+
+/* Encabezados */
+h2 {
+    text-align: center;
+    color: #0056b3;
+    font-size: 1.5em;
+    margin-top: 0;
+    padding-top: 0px; /* Espacio extra debajo de la barra */
+    font-weight: bold;
+    text-transform: none;
+}
+
+h4 {
+    text-align: left;
+    color: #4470a3;
+    margin-top: 20px;
+}
+
+/* Estilos para formularios */
+form {
+    width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"], input[type="date"] {
+    width: calc(100% - 20px);
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    text-transform: none;
+}
+
+button[type="submit"]:hover {
+    background-color: #357ab8;
+}
+
+/* Estilos para tablas */
+table {
+    width: 90%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 0.95em; /* Ajuste del tamaño de letra para resultAlarm.html */
+}
+
+table th, table td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+    white-space: nowrap; /* Evitar que el texto se divida en varias líneas */
+    text-align: center;  /* Alinear al centro para una mejor presentación */
+}
+
+table th {
+    background-color: #0056b3;
+    color: white;
+    text-transform: none;
+    font-size: 0.85em; /* Tamaño de letra más pequeño para los encabezados */
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+td {
+    font-size: 0.9em; /* Ajuste menor del tamaño de letra para la tabla en resultAlarm.html */
+    color: #333;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* Estilos modernos para el Menú Principal */
+body.menu-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f4f6f9 50%, #e1e9f1 100%); /* Fondo moderno con gradiente */
+    font-family: 'Arial', sans-serif;
+}
+
+
+.container {
+    margin-top: -250px; /* Ajusta este valor para elevar el menú */
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 8px 16px rgba(0, 0, 0, 0.15);
+    padding: 40px;
+    max-width: 600px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+
+
+.container:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 12px 24px rgba(0, 0, 0, 0.2); /* Efecto de hover sobre el contenedor */
+}
+
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: center;
+}
+
+.menu-button {
+    padding: 15px 30px;
+    background-color: #0056b3;
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: none;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2); 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
+.menu-button:hover {
+    background-color: #084479;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 6px 12px rgba(0, 0, 0, 0.2); /* Mayor sombra al hacer hover */
+    transform: translateY(-5px); /* Elevar el botón en hover */
+}
+
+.menu-button:active {
+    transform: translateY(2px); /* Efecto de clic en el botón */
+}
+
+footer.menu-footer {
+    margin-top: 60px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* Barra de Service Impact Analysis */
+.service-impact-analysis {
+    background-color: #5290d3;
+    color: rgb(255, 255, 255);
+    padding: 4px 0;
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: none;
+    letter-spacing: 2px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: left;
+    height: 25px;  
+    display: flex;
+}
+
+
+/* Estilo de la imagen del logo en la barra */
+.service-impact-analysis .logo {
+    height: 80%; /* Ajusta el tamaño de la imagen al alto de la barra */
+    margin-right: 20px;
+    max-height: 30px; /* Puedes ajustar este valor según el diseño */
+}
+
+.header {
+    position: absolute;       /* Para posicionamiento absoluto */
+    top: 70px;                /* Ajusta según la altura de la barra superior */
+    right: 20px;              /* Pega el header al lado derecho */
+    z-index: 1000;            /* Asegura que esté por encima de otros elementos */
+}
+

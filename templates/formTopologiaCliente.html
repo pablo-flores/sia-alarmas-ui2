@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Topología de Cliente</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='siaAlarm/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+</head>
+<body>
+
+    <!-- Barra "Service Impact Analysis" con imagen -->
+    <div class="service-impact-analysis">
+        <img src="{{ url_for('static', filename='telecom.gif') }}" alt="Telecom Logo" class="logo">
+        Service Impact Analysis
+    </div>
+
+    <h2>Consulta de Topología de Cliente</h2>
+
+    <form action="{{ url_for('appTopologiaCliente.consulta') }}" method="post">
+        <label for="clientId">ID del Cliente</label>
+        <input type="text" id="clientId" name="clientId" placeholder="Ingrese el ID del cliente" required>
+
+        <button type="submit">Consultar</button>
+    </form>
+
+    <div class="footer">
+        <a href="/" class="back-link">Volver al formulario</a>
+    </div>
+    <div class="footer">
+        <p>Telecom Argentina &copy; 2024</p>
+    </div>
+
+</body>
+</html>

@@ -57,7 +57,8 @@ document.getElementById('download-excel').addEventListener('click', async functi
             "timeDifferenceIncident",
             "inicioOUM",
             "timeDifference",
-            "alarmClearedTime",            
+            "alarmClearedTime",
+            "timeDiffRep",            
             "TypeNetworkElement",
             "networkElementId",
             "clients",
@@ -79,7 +80,8 @@ document.getElementById('download-excel').addEventListener('click', async functi
                 alarm.timeDifferenceIncident,
                 alarm.inicioOUM,
                 alarm.timeDifference,
-                alarm.alarmClearedTime,                
+                alarm.alarmClearedTime, 
+                alarm.timeDiffRep,
                 alarm.TypeNetworkElement,
                 alarm.networkElementId,
                 alarm.clients,
@@ -142,7 +144,8 @@ document.getElementById('download-csv').addEventListener('click', async function
             "timeDifferenceIncident",
             "inicioOUM",
             "timeDifference",
-            "alarmClearedTime",            
+            "alarmClearedTime",
+            "timeDiffRep",            
             "TypeNetworkElement",
             "networkElementId",
             "clients",
@@ -164,7 +167,8 @@ document.getElementById('download-csv').addEventListener('click', async function
                 `"${alarm.timeDifferenceIncident}"`,                
                 `"${alarm.inicioOUM}"`,
                 `"${alarm.timeDifference}"`,
-                `"${alarm.alarmClearedTime}"`,                
+                `"${alarm.alarmClearedTime}"`, 
+                `"${alarm.timeDiffRep}"`,                 
                 `"${alarm.TypeNetworkElement}"`,
                 `"${alarm.networkElementId}"`,
                 `"${alarm.clients}"`,
@@ -208,9 +212,9 @@ document.addEventListener('keydown', function(event) {
     if (event.ctrlKey && (event.key === 'm' || event.key === 'M')) {
         event.preventDefault();
         // Redirigir a formTopologia3D.html usando la ruta del servidor
-        //window.location.href = "{{ url_for('nombre_de_la_ruta_formTopologia3D') }}";
-        //window.location.href = "{{ url_for('form_topologia_3d') }}"; // Flask
-        window.location.href = 'templates/formTopologia3D.html';
+
+        //window.location.href = 'templates/formTopologia3D.html';
+        window.location.href = 'templates/formTopologiaCliente.html';
     }
 });
 
@@ -273,7 +277,8 @@ $(document).ready(function() {
             { "data": "timeDifferenceIncident" },                                    
             { "data": "inicioOUM" },
             { "data": "timeDifference" },
-            { "data": "alarmClearedTime" },            
+            { "data": "alarmClearedTime" }, 
+            { "data": "timeDiffRep" },             
             { "data": "TypeNetworkElement" },
             { "data": "networkElementId" },
             { "data": "clients" },
@@ -461,16 +466,33 @@ $(document).ready(function() {
                     }
                     return data;
                 }
-            },                                    
+            },   
             {
-                "targets": 10, // TypeNetworkElement
+                "targets": 10, // timeDifference
+                "type": "num",
+                "orderable": true,
+                "render": function(data, type) {
+                    if (type === 'display') {   
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
+                        }
+                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
+                        //return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                    }
+                    return data;
+                },
+                "orderDataType": "custom-num-sort"
+            },                                                                       
+            {
+                "targets": 11, // TypeNetworkElement
                 "render": function (data) {
                     return `<div style="text-align: left;">${data}</div>`;
                 }
             },
 
             {
-                "targets": 11, // Ahora corresponde a "plays"
+                "targets": 12, // Ahora corresponde a "plays"
                 "render": function(data, type, row) {
                     if (type === 'display') {
                         // Verificar si 'plays' existe y es un array
@@ -518,7 +540,7 @@ $(document).ready(function() {
             },
                        
             {
-                "targets": 12, // clients
+                "targets": 13, // clients
                 "type": "num",
                 "render": function (data, type, row) {
 
@@ -534,7 +556,7 @@ $(document).ready(function() {
                 }
             },
             {
-                "targets": 13, // timeResolution
+                "targets": 14, // timeResolution
                 "type": "num",
                 "render": function(data, type, row) {
                     if (type === 'sort' || type === 'type') {
@@ -544,7 +566,7 @@ $(document).ready(function() {
                 }
             },  
             {
-                "targets": 14, // plays
+                "targets": 15, // plays
                 "type": "num",
                 "render": function(data, type, row) {
                     if (type === 'sort' || type === 'type') {

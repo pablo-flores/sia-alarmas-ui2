@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+x<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -42,7 +42,9 @@
             .call(d3.zoom().scaleExtent([0.5, 5])
                 .on("zoom", function (event) {
                     svgGroup.attr("transform", event.transform);
-                }))
+                })
+
+            )
             .append("g");
 
         const svgGroup = svg.append("g");
@@ -50,14 +52,14 @@
         // Definimos un filtro para la sombra
         svg.append("defs")
             .append("filter")
-            .attr("id", "drop-shadow")
-            .attr("height", "130%")
-            .append("feDropShadow")
+            //.attr("id", "drop-shadow")
+            .attr("height", "130%")//130
+            //.append("feDropShadow")
             .attr("dx", 2)
             .attr("dy", 2)
             .attr("stdDeviation", 3)
             .attr("flood-color", "#000")
-            .attr("flood-opacity", 0.3);
+            .attr("flood-opacity", 0.5);//0.3
 
         // Escala de colores
         const colorScale = d3.scaleOrdinal()
@@ -88,13 +90,22 @@
             .attr("offset", "100%")
             .attr("style", d => `stop-color: ${colorScale(d.id)}; stop-opacity: 1`);
 
+        const nodeCount = graphData.nodes.length;
+        const optimalDistance = Math.min(width, height) / Math.sqrt(nodeCount);
+
         const simulation = d3.forceSimulation(graphData.nodes)
-            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
-            .force("charge", d3.forceManyBody().strength(-500))
+            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100))//150
+            //.force("charge", d3.forceManyBody().strength(-0))//-500
+            //.force("link", d3.forceLink(graphData.links).distance(optimalDistance))
+            .force("charge", d3.forceManyBody().strength(-optimalDistance * 1.5))            
+            //.force("charge", null) // Desactiva la fuerza de repulsión
             .force("center", d3.forceCenter(width / 2, height / 2))
+            //.force("center", null) // Desactiva la fuerza de centrado
             .force("collide", d3.forceCollide().radius(100))
-            .force("x", d3.forceX(width / 2).strength(0.2))
-            .force("y", d3.forceY(height / 2).strength(0.8))
+            //.force("collide", d3.forceCollide().radius(40).strength(1))//fuerza de colisión para evitar que los nodos se solapen pero manteniéndolos cerca
+
+            //.force("x", d3.forceX(width / 2).strength(0.2))
+            //.force("y", d3.forceY(height / 2).strength(0.8))
             .on("tick", ticked);
 
         // Definimos la animación para el movimiento en las líneas
@@ -102,9 +113,9 @@
             line.attr("stroke-dasharray", "5,5")
                 .attr("stroke-dashoffset", 0)
                 .transition()
-                .duration(10000)
+                .duration(5000)//10000
                 .ease(d3.easeLinear)
-                .attr("stroke-dashoffset", -200);
+                .attr("stroke-dashoffset", -200);//-200
         }
 
         // Dibujamos las relaciones (enlaces)
@@ -132,7 +143,7 @@
             .data(graphData.nodes)
             .enter()
             .append("circle")
-            .attr("r", 30)
+            .attr("r", 27)//diametro del nodo
             .attr("fill", d => `url(#grad3d-${d.id})`)
             .attr("stroke", d => colorScale(d.id) + 500)
             .attr("stroke-width", 5)
@@ -141,7 +152,7 @@
             .on("mouseover", function(event, d) {
                 d3.select(this)
                     .transition()
-                    .duration(200)
+                    .duration(150)
                     .attr("r", 35)
                     .attr("stroke-width", 6)
                     .attr("stroke", colorScale(d.id));
@@ -153,6 +164,26 @@
                     .attr("r", 30)
                     .attr("stroke-width", 5)
                     .attr("stroke", d => colorScale(d.id) + 500);
+            })                    
+
+            // Añadir el manejador de doble clic a los nodos
+            .on("dblclick", function (event, d) {
+
+                event.stopPropagation(); // Evitar que el evento de doble clic llegue al SVG o al zoom
+
+                const labelText = d.properties.ID; // Ajustar según la propiedad que contiene el texto de labels
+              
+                copyToClipboard(labelText);
+                // Opcional: Feedback visual en el nodo
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("stroke", "green")
+                    .attr("stroke-width", 7)
+                    .transition()
+                    .duration(500)
+                    .attr("stroke", colorScale(d.id))
+                    .attr("stroke-width", 5);                               
             });
 
         // Añadimos el texto sobre los nodos
@@ -182,6 +213,16 @@
             .attr("font-size", "9px")
             .attr("fill", "#333")
             .text(d => d.properties.TAG_FMS);
+
+        // Función para copiar texto al portapapeles
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log(`Texto copiado: ${text}`);
+            }).catch(err => {
+                console.error('Error al copiar texto:', err);
+            });
+        }
+
 
         function ticked() {
             link.attr("x1", d => limitPosition(d.source.x, width))
@@ -225,6 +266,11 @@
             const newHeight = window.innerHeight - (window.innerHeight / 8);
             svg.attr("width", newWidth - 1000).attr("height", newHeight - 1000);
             simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+
+            //simulation.nodes(graphData.nodes);
+            //simulation.force("link").links(graphData.links);
+            //simulation.alpha(1).restart();
+
         });
     </script>
 

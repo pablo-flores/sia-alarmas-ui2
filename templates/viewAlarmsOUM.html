@@ -13,14 +13,7 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/jquery.dataTables.min.css') }}?v={{ timestamp }}">
 
 
-        <!-- Archivos CSS locales 
-        <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/jquery.dataTables.min.css') }}">-->
-        <!-- Archivos JavaScript locales -->
-        <!-- 
-        <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}"></script>
-    -->  
-        
+        <!-- Archivos CSS locales  -->  
         <script src="{{ url_for('static', filename='vendor/js/jquery-3.6.0.min.js') }}?v={{ timestamp }}"></script>
         <script src="{{ url_for('static', filename='vendor/js/jquery.dataTables.min.js') }}?v={{ timestamp }}"></script>
         <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}?v={{ timestamp }}"></script>
@@ -52,7 +45,7 @@
                 Service Impact Analysis
                 <!-- Botón de expansión/contracción -->
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
-                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.3 - EN PRUEBAS</div>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.4 - EN PRUEBAS</div>   
                 <div class="refresh-container">
                     <a href="javascript:(window.location.href = window.location.href)" class="btn-modern">Refresh - Foto: <span id="local-time"></span></a>        
                     <div id="progress-container">
@@ -94,8 +87,11 @@
                 <div class="grid-itemRight">T-to Outage:</div>
                 <div class="grid-item">Diferencia minutos entre T.Inicio Outage y T.Inicio Detección.</div>                
 
-                <div class="grid-itemRight">T.Fin Alarma:</div>     
+                <div class="grid-itemRight">T.Fin Repar:</div>     
                 <div class="grid-item">Fecha y hora que Fault desafectó la alarma, muestra los últimos {{ days_configMap }} días.</div>
+
+                <div class="grid-itemRight">T-to Repar:</div>
+                <div class="grid-item">Diferencia minutos entre T.Raise Alarma y T.Fin Repar.</div>                        
                                 
                 <div class="grid-itemRight">Tipo Elemento Red:</div>
                 <div class="grid-item">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto de recursos asociados a un nombre, para facilitar su gestión).</div>
@@ -130,7 +126,8 @@
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Detect</th> <!-- fin o creacion alarma deteccion Fault  -->                                                                                         
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Outage</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Outage</th>  <!-- llegada al outage  -->                 
-                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Alarma</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Repar</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Repar</th>  <!-- Fin del outage  -->                                         
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elemento Red<sup style='color: red;'>*</sup></th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red<sup style='color: red;'>*</sup></th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>

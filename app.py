@@ -59,7 +59,7 @@ def index():
     timestamp = int(time.time())
     
     return render_template('viewAlarmsOUM.html', days_configMap=days_configMap, timestamp=timestamp)
-    #return render_template('viewAlarmsOUM.html', days_configMap=days_configMap)
+
 
 
 def convert_object_ids(data):
@@ -173,7 +173,8 @@ def search_alarm():
 
 @app.route('/formTopologia3D')
 def form_topologia_3d():
-    return render_template('formTopologia3D.html')
+    #return render_template('formTopologia3D.html')
+    return render_template('formTopologiaCliente.html')
 
 
 # Nueva ruta para obtener las alarmas en formato JSON
@@ -213,13 +214,14 @@ def get_alarmas():
         '6': 'timeDifferenceNumericIncident', # Campo calculado numérico              
         '7': 'omArrivalTimestamp',
         '8': 'timeDifferenceNumeric',  # Campo calculado numérico
-        '9': 'alarmClearedTime',                 
-        '10': 'TypeNetworkElement',
-        '11': 'networkElementId',
-        '12': 'clients',
-        '13': 'timeResolution',
-        '14': 'sequence',
-        '15': 'plays'
+        '9': 'alarmClearedTime',         
+        '10': 'timeDiffNumRep',                 
+        '11': 'TypeNetworkElement',
+        '12': 'networkElementId',
+        '13': 'clients',
+        '14': 'timeResolution',
+        '15': 'sequence',
+        '16': 'plays'
     }
 
     # Determinar el campo de ordenamiento y la dirección
@@ -246,6 +248,8 @@ def get_alarmas():
                 {"alarmClearedTime": search_regex},
                 {"timeDifferenceNumeric": search_regex},
                 {"timeDifferenceNumericIncident": search_regex},
+                {"timeDiffRep": search_regex},
+                {"timeDiffNumRep": search_regex},                
                 {"alarmReportingTime": search_regex},
                 {"networkElement.type": search_regex},   
                 {"timeResolution": search_regex},
@@ -297,7 +301,114 @@ def get_alarmas():
                         60000  # Convertir milisegundos a minutos
                     ]
                 },
+                # Calcular 'timeDiffNumRep' sin redondeo 
+                "timeDiffNumRep": {
+                    "$divide": [
+                        {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},
+                        60000  # Convertir milisegundos a minutos
+                    ]
+                },
+             
 
+                # Formatear 'timeDiffRep' como cadena con 'min'  parte visual
+                "timeDiffRep": {
+                    "$concat": [
+                        # Determinar si el tiempo es negativo
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    #{ "$subtract": ["$alarmClearedTime", "$alarmRaisedTime"] },
+                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},                                    
+                                    0
+                                ]},
+                                "-",  # Si es negativo, agregar "-"
+                                ""    # Si no, dejar vacío
+                            ]
+                        },
+                        # Convertir los minutos a string con dos dígitos si es necesario
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            60000
+                                        ]}
+                                    },
+                                    10
+                                ]},
+                                # Si los minutos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "",
+                                    { "$toString": {
+                                        "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                60000
+                                            ]
+                                        }
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            60000
+                                        ]
+                                    }
+                                }}
+                            ]
+                        },
+                        ":",
+                        # Convertir los segundos restantes a string con dos dígitos
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$mod": [
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                1000
+                                            ]}
+                                        },
+                                        60
+                                    ]},
+                                    10
+                                ]},
+                                # Si los segundos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "0",
+                                    { "$toString": {
+                                        "$mod": [
+                                            { "$floor": {
+                                                "$divide": [
+                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                    1000
+                                                ]}
+                                            },
+                                            60
+                                        ]
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$mod": [
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                1000
+                                            ]}
+                                        },
+                                        60
+                                    ]
+                                }}
+                            ]
+                        },
+                        " min"
+                    ]
+                }
+,
                 # Formatear 'timeDifference' como cadena con 'min'  parte visual
                 "timeDifferenceIncident": {
                     "$concat": [
@@ -483,6 +594,8 @@ def get_alarmas():
                 "alarmReportingTime": 1,
                 "sequence": 1,
                 "plays": 1,
+                "timeDiffRep": 1,                
+                "timeDiffNumRep": 1,                                                
                 "timeDifference": 1,        # Formateado para visualización
                 "timeDifferenceNumeric": 1,  # Campo numérico para ordenación
                 "timeDifferenceIncident": 1,        # Formateado para visualización

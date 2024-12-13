@@ -1,0 +1,21 @@
+"alarmId": "1733851574397",
+"assets": [
+    {
+        "affectPlays": [],
+        "alarmDetails": "LinkDown: 1WU11C",
+        "alarmRaisedTime": "2024-12-10T14:26:18",
+        "alarmReportingTime": "2024-12-10T14:26:14",
+        "alarmState": "RAISED",
+        "alarmType": "INDISPONIBILIDAD",
+        "alarmedObjectType": "DSLAM CHASIS",
+        "networkElementId": "1WU11C",
+        "perceivedSeverity": "Media",
+        "reopened": false,
+        "specificProblem": "Falla en equipamiento",
+        "timeResolution": 2
+    }
+],
+"createAt": "2024-12-10T14:26:56",
+"isRootCause": true,
+"origenId": "21723718",
+"sourceSystemId": "ICD"

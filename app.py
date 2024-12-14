@@ -46,6 +46,15 @@ buenos_aires_tz = timezone('America/Argentina/Buenos_Aires')
 first_call = True
 
 
+def format_datetime(dt):
+    if dt:
+        # Asegúrate de que la fecha esté en formato ISO 8601 con zona horaria
+        return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
+    else:
+        return '-'
+
+
+
 # Ruta principal que carga la página
 @app.route('/')
 def index():

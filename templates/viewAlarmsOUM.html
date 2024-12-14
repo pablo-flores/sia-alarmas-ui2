@@ -19,6 +19,9 @@
         <script src="{{ url_for('static', filename='vendor/js/xlsx.full.min.js') }}?v={{ timestamp }}"></script>
 
 
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+
+
         <!-- highlight.js JS 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>-->
         <script src="{{ url_for('static', filename='vendor/js/highlight.min.js') }}?v={{ timestamp }}"></script>
@@ -45,7 +48,7 @@
                 Service Impact Analysis
                 <!-- Botón de expansión/contracción -->
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
-                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.4 - EN PRUEBAS</div>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.5 - EN PRUEBAS</div>   
                 <div class="refresh-container">
                     <a href="javascript:(window.location.href = window.location.href)" class="btn-modern">Refresh - Foto: <span id="local-time"></span></a>        
                     <div id="progress-container">
@@ -132,6 +135,7 @@
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red<sup style='color: red;'>*</sup></th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>
                         <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">TER</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to R</th>                        
                     </tr>       
                 </thead>
                         

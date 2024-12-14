@@ -285,7 +285,6 @@ $(document).ready(function() {
             { "data": "timeResolution" },
             { "data": "plays", "visible": false },
             { "data": "sequence", "visible": false }
-            //{ "data": null, "defaultContent": '', "title": "T-to R", "orderable": false } // Nueva columna            
         ],
         "autoWidth": true,
         "paging": true,
@@ -296,40 +295,6 @@ $(document).ready(function() {
         "pageLength": 15,
         "lengthMenu": [ [10, 15, 25, 50, 100, 300, 1000], [10, 15, 25, 50, 100, 300, 1000] ],
         "columnDefs": [
-            {
-                "targets": 10, // Índice de la nueva columna "T-to Repar"
-                "render": function(data, type, row) {
-                    if (type === 'display') {
-
-                        console.log('Rendering T-to Repar for row:', row);
-
-                        const alarmClearedTime = row.alarmClearedTime;
-
-                        if (alarmClearedTime && alarmClearedTime !== '-') {
-                            if (data.length > 9) {
-                                data = data.split(':')[0] + ' min';
-                            }
-                            const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-
-                            return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
-                        }
-                        else {
-                            
-                            const alarmReportingTime = row.alarmReportingTime;
-                            if (alarmReportingTime && alarmReportingTime !== '-') {
-                             
-                                return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTime}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">00:00 min</div>`;
-                                
-                            } else {
-                                return '-';
-                            }
-                        }
-
-                    }
-                    return data;
-
-                }
-            },            
             {
                 "targets": 0, // alarmId
                 "render": function(data, type, row) {
@@ -502,7 +467,23 @@ $(document).ready(function() {
                     return data;
                 }
             },   
-                                                                      
+            {
+                "targets": 10, // timeDifference
+                "type": "num",
+                "orderable": true,
+                "render": function(data, type) {
+                    if (type === 'display') {   
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
+                        }
+                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
+                        //return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
+                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                    }
+                    return data;
+                },
+                "orderDataType": "custom-num-sort"
+            },                                                                       
             {
                 "targets": 11, // TypeNetworkElement
                 "render": function (data) {
@@ -632,8 +613,6 @@ $(document).ready(function() {
             // Reiniciar la barra de progreso
             resetProgressBar();
             updateLocalTime();
-            // Actualizar "T-to Repar" al renderizar
-            //updateTtoRepar();
         }
     });
 
@@ -641,86 +620,20 @@ $(document).ready(function() {
     $('#alarmTable').show();
 });
 
-
+/*******************************************************************************/
+//function escapeHtml(text) {
+//    return text
+//        .replace(/&/g, "&amp;")
+//        .replace(/</g, "&lt;")
+//        .replace(/>/g, "&gt;")
+//        .replace(/"/g, "&quot;")
+//        .replace(/'/g, "&#039;");
+//}
+//
+//let jsonString = row.plays ? escapeHtml(JSON.stringify(row.plays, null, 2)) : 'No disponible';
+//return `<pre>${jsonString}</pre>`;
 /*******************************************************************************/
 
-// Función auxiliar para agregar cero a la izquierda si es necesario
-function padZero(number) {
-    return number.toString().padStart(2, '0');
-}
-
-// Función para actualizar "T-to Repar" cada 5 segundos en formato MM:SS
-function updateTtoRepar() {
-    const tToReparElements = document.querySelectorAll('.t-to-repar');
-    const now = new Date();
-
-    tToReparElements.forEach(element => {
-        //let alarmRaisedTimeStr = element.getAttribute('data-alarmraisedtime');
-        let alarmRaisedTimeStr = element.getAttribute('data-alarmreportingtime');
-        console.log('Actualizando T-to Repar para alarmRaisedTime:', alarmRaisedTimeStr);
-        
-        if (alarmRaisedTimeStr && alarmRaisedTimeStr !== '-') {
-            // Agregar el año actual a la cadena de fecha
-            const currentYear = now.getFullYear();
-            alarmRaisedTimeStr = `${currentYear}-${alarmRaisedTimeStr}`;
-            console.log('Fecha con año añadido:', alarmRaisedTimeStr);
-
-            // Parsear la fecha y hora de la alarma
-            const alarmRaisedTime = new Date(alarmRaisedTimeStr);
-            console.log('Parsed alarmRaisedTime:', alarmRaisedTime);
-            
-            if (!isNaN(alarmRaisedTime)) {
-                const diffMs = now - alarmRaisedTime; // Diferencia en milisegundos
-                console.log('Diferencia en ms:', diffMs);
-                
-                // Verificar si la diferencia es negativa
-                if (diffMs < 0) {
-                    console.warn('alarmRaisedTime está en el futuro:', alarmRaisedTimeStr);
-                    element.textContent = '0:00 min';
-                    return;
-                }
-
-                // Calcular minutos y segundos
-                const diffTotalSeconds = Math.floor(diffMs / 1000);
-                const minutes = Math.floor(diffTotalSeconds / 60);
-                const seconds = diffTotalSeconds % 60;
-
-                console.log(`Diferencia: ${minutes}:${seconds}`);
-
-                // Formatear como MM:SS
-                //const formattedTime = `${padZero(minutes)}:${padZero(seconds)}`;
-
-                // Formatear como 'M:SS min' (sin cero inicial en minutos)
-                //const formattedTime = `${minutes}:${padZero(seconds)}`;
-
-                let formattedTime;
-
-                if (minutes > 99) { // Cambia la condición según tu necesidad
-                    formattedTime = `${minutes}`;
-                } else {
-                    formattedTime = `${minutes}:${padZero(seconds)}`;
-                }
-
-                element.textContent = `${formattedTime} min`;
-            } else {
-                console.warn('alarmReportingTime no es una fecha válida:', alarmRaisedTimeStr);
-                element.textContent = 'Tiempo Inválido';
-            }
-        } else {
-            element.textContent = '-';
-        }
-    });
-}
-
-
-
-// Ejecutar la función al cargar la página y cada 5 segundos
-document.addEventListener('DOMContentLoaded', function () {
-    updateTtoRepar();
-    setInterval(updateTtoRepar, 1000);
-});
-
-/*******************************************************************************/
 
 // Variables globales para la paginación del modal
 let currentModalPage = 1;

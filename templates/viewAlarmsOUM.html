@@ -50,6 +50,15 @@
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
                 <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.6 - EN PRUEBAS</div>   
                 <div class="refresh-container">
+                    <!-- Toggle Switch con Tooltip Personalizado -->
+                    <div class="switch-container">
+                        <label class="switch" title="Habilitar o deshabilitar la actualización automática de la grilla cada 10 segundos.">
+                            <input type="checkbox" id="auto-refresh-toggle" checked aria-label="Habilitar o deshabilitar la actualización automática de la grilla cada 10 segundos.">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="tooltip-text">Habilitar o deshabilitar la actualización automática</span>
+                    </div>                    
+
                     <a href="javascript:(window.location.href = window.location.href)" class="btn-modern">Refresh - Foto: <span id="local-time"></span></a>        
                     <div id="progress-container">
                         <div id="progress-bar"></div>

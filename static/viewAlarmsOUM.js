@@ -242,6 +242,7 @@ function processStringForDisplay(data) {
 
 // Declarar 'table' en el ámbito global
 var table;
+var autoRefreshInterval; // Variable para almacenar el ID del intervalo
 
 // Inicialización de DataTable con procesamiento del lado del servidor
 $(document).ready(function() {
@@ -656,17 +657,90 @@ $(document).ready(function() {
     $('#alarmTable').show();
 
     // Configurar el intervalo para recargar la tabla cada 30 segundos
-    setInterval(function() {
+    //setInterval(function() {
+//
+    //    if (table) {
+    //        console.log('Recargando DataTable...');
+    //        table.ajax.reload(null, false); // false para mantener la paginación actual
+    //    } else {
+    //        console.warn('DataTable no está inicializada.');
+    //    }
+    //}, 10000); // 30000 ms = 30 segundos
 
-        if (table) {
-            console.log('Recargando DataTable...');
-            table.ajax.reload(null, false); // false para mantener la paginación actual
+    // Inicializar el estado del Toggle Switch desde localStorage
+    var toggleSwitch = $('#auto-refresh-toggle');
+    var isAutoRefreshEnabled = localStorage.getItem('autoRefreshEnabled');
+
+    if (isAutoRefreshEnabled === null) {
+        // Si no hay un valor guardado, usa el estado por defecto (checked)
+        localStorage.setItem('autoRefreshEnabled', 'true');
+        toggleSwitch.prop('checked', true);
+        startAutoRefresh();
+    } else {
+        // Establece el estado del Toggle Switch según el valor guardado
+        var isChecked = (isAutoRefreshEnabled === 'true');
+        toggleSwitch.prop('checked', isChecked);
+        if (isChecked) {
+            startAutoRefresh();
         } else {
-            console.warn('DataTable no está inicializada.');
+            stopAutoRefresh();
         }
-    }, 10000); // 30000 ms = 30 segundos
-    
+    }
+
+    // Manejar el evento de cambio del Toggle Switch
+    toggleSwitch.on('change', function() {
+        var isChecked = $(this).is(':checked');
+        localStorage.setItem('autoRefreshEnabled', isChecked);
+        if (isChecked) {
+            startAutoRefresh();
+            console.log('Auto-refresh habilitado.');
+        } else {
+            stopAutoRefresh();
+            console.log('Auto-refresh deshabilitado.');
+        }
+    });
+
+
+
+       // Función para iniciar la recarga automática
+    function startAutoRefresh() {
+        if (!autoRefreshInterval) {
+            autoRefreshInterval = setInterval(function() {
+                console.log('Recargando DataTable automáticamente...');
+                table.ajax.reload(null, false); // false para mantener la paginación actual
+            }, 10000); // 30000 ms = 30 segundos
+            console.log('Auto-refresh iniciado.');
+        }
+    }
+
+    // Función para detener la recarga automática
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+            console.log('Auto-refresh detenido.');
+        }
+    }
+
+    // Inicializar el estado del Toggle Switch según esté marcado o no
+    var toggleSwitch = $('#auto-refresh-toggle');
+    if (toggleSwitch.is(':checked')) {
+        startAutoRefresh();
+    }
+
+    // Manejar el evento de cambio del Toggle Switch
+    toggleSwitch.on('change', function() {
+        if ($(this).is(':checked')) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+
+
 });
+
+
 
 
 

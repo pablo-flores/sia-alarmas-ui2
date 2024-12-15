@@ -147,7 +147,7 @@ body, html {
     font-weight: bold;
     text-transform: none;
     letter-spacing: 2px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    /*box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);*/
     /*: 0 4px 6px rgba(0, 0, 0, 0.1);*/
     position: fixed;
     top: 0;
@@ -862,4 +862,67 @@ hr {
 .dataTables_processing {
     display: none !important;
 }
+
+/***********************************************************/
+
+/* Estilos para el Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 26px;
+    height: 13px;
+    margin-right: 5px; /* Espacio entre el switch y el botón de Refresh */
+    vertical-align: middle; /* Alinear verticalmente con el botón */
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 12px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 9px;
+    width: 9px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.8s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(13px);
+}
+
+/* Estilos opcionales para el botón de Refresh y el contenedor */
+.refresh-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Permitir que los elementos se envuelvan en pantallas pequeñas */
+}
+
+/***********************************************************/
 

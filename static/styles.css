@@ -847,7 +847,7 @@ hr {
     border: 2px solid rgb(255, 255, 255);
     border-top-color: #1e6797; /* Color del spinner */
     border-radius: 50%;
-    animation: spin 3s linear infinite;
+    animation: spin 1s linear infinite;
     margin-left: 2px; /* Espacio entre el texto y el spinner */
     vertical-align: middle; /* Alineación vertical con el texto */
 }
@@ -856,5 +856,10 @@ hr {
     to { transform: rotate(360deg); }
 }
 
+/***********************************************************/
 
+/* Ocultar el indicador de processing en DataTables */
+.dataTables_processing {
+    display: none !important;
+}
 

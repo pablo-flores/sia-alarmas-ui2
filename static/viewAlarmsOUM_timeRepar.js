@@ -237,18 +237,12 @@ function processStringForDisplay(data) {
 
 /*******************************************************************************/
 
-
-/*******************************************************************************/
-
-// Declarar 'table' en el ámbito global
-var table;
-
 // Inicialización de DataTable con procesamiento del lado del servidor
 $(document).ready(function() {
     $('#loading').show();
     $('#alarmTable').hide();
 
-    table = $('#alarmTable').DataTable({
+    $('#alarmTable').DataTable({
         "serverSide": true,
         "ajax": {
             "url": "/get_alarmas",
@@ -264,7 +258,7 @@ $(document).ready(function() {
                 d.search = { "value": d.search.value };
             },
             "dataSrc": function (json) {
-                //console.log('Datos recibidos desde server:', json.data);
+                console.log('Datos recibidos desde server:', json.data);
                 if (json.error) {
                     console.error("Error desde el servidor:", json.error);
                     alert("Hubo un error en el servidor: " + json.error);
@@ -290,8 +284,7 @@ $(document).ready(function() {
             { "data": "clients" },
             { "data": "timeResolution" },
             { "data": "plays", "visible": false },
-            { "data": "sequence", "visible": false },
-            { "data": "alarmReportingTimeFull", "visible": false }
+            { "data": "sequence", "visible": false }
             //{ "data": null, "defaultContent": '', "title": "T-to R", "orderable": false } // Nueva columna            
         ],
         "autoWidth": true,
@@ -308,7 +301,7 @@ $(document).ready(function() {
                 "render": function(data, type, row) {
                     if (type === 'display') {
 
-                        //console.log('Rendering T-to Repar for row:', row);
+                        console.log('Rendering T-to Repar for row:', row);
 
                         const alarmClearedTime = row.alarmClearedTime;
 
@@ -322,15 +315,10 @@ $(document).ready(function() {
                         }
                         else {
                             
-                            const alarmReportingTimeFull = row.alarmReportingTimeFull;
-                            if (alarmReportingTimeFull && alarmReportingTimeFull !== '-') {
+                            const alarmReportingTime = row.alarmReportingTime;
+                            if (alarmReportingTime && alarmReportingTime !== '-') {
                              
-                                if (data.length > 9) {
-                                    data = data.split(':')[0] + ' min';
-                                }
-                                const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-                                                                
-                                return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTimeFull}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
+                                return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTime}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">0:00 min</div>`;
                                 
                             } else {
                                 return '-';
@@ -621,7 +609,7 @@ $(document).ready(function() {
                 "previous": "Anterior"
             },
             "loadingRecords": "Cargando...",
-            //"processing": 'Procesando...',
+            "processing": 'Procesando...',
             "emptyTable": "No hay datos disponibles en la tabla"
         },
         "drawCallback": function() {
@@ -649,25 +637,9 @@ $(document).ready(function() {
         }
     });
 
-    // Verificar que 'table' está correctamente inicializada
-    console.log('DataTable initialized:', table);
-
     $('#loading').hide();
     $('#alarmTable').show();
-
-    // Configurar el intervalo para recargar la tabla cada 30 segundos
-    setInterval(function() {
-
-        if (table) {
-            console.log('Recargando DataTable...');
-            table.ajax.reload(null, false); // false para mantener la paginación actual
-        } else {
-            console.warn('DataTable no está inicializada.');
-        }
-    }, 10000); // 30000 ms = 30 segundos
-    
 });
-
 
 
 /*******************************************************************************/
@@ -685,19 +657,21 @@ function updateTtoRepar() {
     tToReparElements.forEach(element => {
 
         let alarmReportingTimeStr = element.getAttribute('data-alarmreportingtime');
-        //console.log('Actualizando T-to Repar vs. alarmReportingTime:', alarmReportingTimeStr);
+        console.log('Actualizando T-to Repar vs. alarmReportingTime:', alarmReportingTimeStr);
         
         if (alarmReportingTimeStr && alarmReportingTimeStr !== '-') {
             // Agregar el año actual a la cadena de fecha
-            //console.log('Fecha con año completo:', alarmReportingTimeStr);
+            const currentYear = now.getFullYear();
+            alarmReportingTimeStr = `${currentYear}-${alarmReportingTimeStr}`;
+            console.log('Fecha con año añadido:', alarmReportingTimeStr);
 
             // Parsear la fecha y hora de la alarma
             const alarmRaisedTime = new Date(alarmReportingTimeStr);
-            //console.log('Parsed alarmRaisedTime:', alarmRaisedTime);
+            console.log('Parsed alarmRaisedTime:', alarmRaisedTime);
             
             if (!isNaN(alarmRaisedTime)) {
                 const diffMs = now - alarmRaisedTime; // Diferencia en milisegundos
-                //console.log('Diferencia en ms:', diffMs);
+                console.log('Diferencia en ms:', diffMs);
                 
                 // Verificar si la diferencia es negativa
                 if (diffMs < 0) {
@@ -711,7 +685,13 @@ function updateTtoRepar() {
                 const minutes = Math.floor(diffTotalSeconds / 60);
                 const seconds = diffTotalSeconds % 60;
 
-                //console.log(`Diferencia: ${minutes}:${seconds}`);
+                console.log(`Diferencia: ${minutes}:${seconds}`);
+
+                // Formatear como MM:SS
+                //const formattedTime = `${padZero(minutes)}:${padZero(seconds)}`;
+
+                // Formatear como 'M:SS min' (sin cero inicial en minutos)
+                //const formattedTime = `${minutes}:${padZero(seconds)}`;
 
                 let formattedTime;
 
@@ -861,7 +841,7 @@ $(document).ready(function() {
 // Listener para clic en alarmId (primera columna) utilizando data-alarmid
 $('#alarmTable tbody').on('click', 'td:first-child .tooltip-cell', function () {
     var alarmId = $(this).data('alarmid');
-    //console.log("Alarm ID clicked:", alarmId);
+    console.log("Alarm ID clicked:", alarmId);
 
     if (alarmId) {
         searchAlarms(alarmId, 1, itemsPerPage);
@@ -974,7 +954,7 @@ function updateLocalTime() {
     };
     const formattedTime = new Intl.DateTimeFormat('es-AR', options).format(now);
     document.getElementById('local-time').textContent = formattedTime;
-    //console.log('Local time updated:', formattedTime);
+    console.log('Local time updated:', formattedTime);
 }
 
 // Función para actualizar la barra de progreso
@@ -1004,7 +984,8 @@ function updateProgressBar() {
     //console.log('Elapsed time (ms):', elapsed);
 
     const percentage = Math.min((elapsed / 600000) * 100, 100); // 10 minutos = 600,000 ms
-    //console.log("Progress percentage:", Math.round(percentage) + "% | Last update time:", lastUpdate);
+    //console.log('Progress percentage:', percentage);
+    console.log("Progress percentage:", Math.round(percentage) + "% | Last update time:", lastUpdate);
 
 
     const progressBar = document.getElementById('progress-bar');
@@ -1041,8 +1022,5 @@ document.getElementById('toggleButton').addEventListener('click', function() {
         expandableDiv.style.display = 'none';
     }
 });
-
-/*******************************************************************************/
-
 
 /*******************************************************************************/

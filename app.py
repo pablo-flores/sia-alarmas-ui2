@@ -9,6 +9,7 @@ import os
 from bson import ObjectId  # Importa ObjectId aquí
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
+from dateutil import parser
 
 # Configuración del logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -627,10 +628,34 @@ def get_alarmas():
             else:
                 return '-'
 
+        def format_date_full(dt):
+            if dt:
+                if isinstance(dt, str):
+                    try:
+                        # Intenta analizar la cadena a un objeto datetime
+                        dt = parser.isoparse(dt)
+                    except ValueError:
+                        logger.error(f"Formato de fecha inválido: {dt}")
+                        return '-'
+                if isinstance(dt, datetime):
+                    # Asegúrate de que el objeto datetime sea consciente de la zona horaria
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=utc)
+                    return dt.astimezone(buenos_aires_tz).strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    logger.error(f"Tipo de dato inesperado para fecha: {type(dt)}")
+                    return '-'
+            else:
+                return '-'
+             
+
         alarma['inicioOUM'] = format_datetime(alarma.get('inicioOUM'))
         alarma['alarmRaisedTime'] = format_datetime(alarma.get('alarmRaisedTime'))
         alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
+        alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))        
         alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
+
+        #logger.info(f"alarmReportingTimeFull {alarma['alarmReportingTimeFull']}")
 
         # Manejar el campo 'timeResolution'
         if not alarma.get('timeResolution'):
@@ -679,6 +704,7 @@ def get_alarmas():
         "recordsFiltered": total_count,
         "data": alarmas
     })
+
 
 # Ruta para exportar los datos
 @app.route('/export/<format>')

@@ -1,10 +1,10 @@
 echo "# python" >> README.md
 git init
 git add .\app.py
-git branch -M patch2.4
+git branch -M patch2.5
 git commit -m "first commit"
 #git remote add origin https://github.com/pablo-flores/sia-alarmas-ui2.git
-git push -u origin patch2.4
+git push -u origin patch2.5
 
 
 netstat -n |grep 192.168.218.4

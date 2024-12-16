@@ -6,6 +6,7 @@ from flask_pymongo import PyMongo
 from pytz import timezone, utc
 import pandas as pd
 import os
+import secrets
 from bson import ObjectId  # Importa ObjectId aquí
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
@@ -43,8 +44,18 @@ mongo = PyMongo(app)
 # Definir la zona horaria Local (Buenos Aires)
 buenos_aires_tz = timezone('America/Argentina/Buenos_Aires')
 
+
+
+# Genera una clave secreta segura
+app.config['SECRET_KEY'] = secrets.token_hex(32)  # Genera una clave de 64 caracteres hexadecimales
+
+
 # Variable para controlar la primera llamada
 first_call = True
+
+# Configuración del logger
+logger = logging.getLogger('app')
+logger.setLevel(logging.INFO)
 
 
 def format_datetime(dt):
@@ -53,6 +64,18 @@ def format_datetime(dt):
         return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
     else:
         return '-'
+
+def format_datetime_UPD(dt):
+#    if dt:
+#        if dt.tzinfo is None:
+#            dt = utc.localize(dt)
+#        return dt.astimezone(buenos_aires_tz).isoformat()
+#    else:
+#        return '-'
+    if dt:
+        return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+    else:
+        return '-'        
 
 
 
@@ -704,6 +727,207 @@ def get_alarmas():
         "recordsFiltered": total_count,
         "data": alarmas
     })
+
+
+def procesar_origen_id(origen_id):
+    """
+    Procesa el origen_id según su longitud y devuelve el origenId formateado.
+    """
+    if len(origen_id) == 24:
+        return f"FMS {origen_id}"
+    elif len(origen_id) in [10, 13]:
+        return f"FMC {origen_id}"
+    elif len(origen_id) in [8, 9]:
+        return f"ICD {origen_id}"
+    elif origen_id:
+        # Asegura que tenga exactamente 4 caracteres de espacio
+        return f"    {origen_id}"
+    else:
+        return '-'
+
+    
+
+
+@app.route('/update_visible_alarms', methods=['POST'])
+@csrf.exempt  # Exime esta ruta de la protección CSRF
+def update_visible_alarms():
+    try:
+        data = request.get_json()
+        original_alarm_ids = data.get('alarm_ids', [])
+        
+        if not original_alarm_ids:
+            logger.warning("No se recibieron alarm_ids en la solicitud.")
+            return jsonify({"error": "No se recibieron alarm_ids"}), 400
+
+        # Eliminar los primeros 4 caracteres para la consulta
+        stripped_alarm_ids = [aid[4:] for aid in original_alarm_ids if isinstance(aid, str) and len(aid) > 4]
+        
+        if not stripped_alarm_ids:
+            logger.warning("No se proporcionaron alarm_ids válidos después de la modificación.")
+            return jsonify({"error": "No se proporcionaron alarm_ids válidos"}), 400
+
+        # Consulta a la base de datos usando los stripped_alarm_ids
+        cursor = mongo.db.alarm.find(
+            {"alarmId": {"$in": stripped_alarm_ids}},
+            {"alarmId": 1, "origenId": 1, "alarmClearedTime": 1, "networkElementId": 1,
+                "alarmState": {
+                    "$cond": {
+                        "if": {"$in": ["$alarmState", ["UPDATED", "RETRY"]]},
+                        "then": "RAISED",
+                        "else": "$alarmState"
+                    }
+                },
+                # Formatear 'timeDiffRep' como cadena con 'min'  parte visual
+                "timeDiffRep": {
+                    "$concat": [
+                        # Determinar si el tiempo es negativo
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    #{ "$subtract": ["$alarmClearedTime", "$alarmRaisedTime"] },
+                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},                                    
+                                    0
+                                ]},
+                                "-",  # Si es negativo, agregar "-"
+                                ""    # Si no, dejar vacío
+                            ]
+                        },
+                        # Convertir los minutos a string con dos dígitos si es necesario
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            60000
+                                        ]}
+                                    },
+                                    10
+                                ]},
+                                # Si los minutos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "",
+                                    { "$toString": {
+                                        "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                60000
+                                            ]
+                                        }
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$floor": {
+                                        "$divide": [
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            60000
+                                        ]
+                                    }
+                                }}
+                            ]
+                        },
+                        ":",
+                        # Convertir los segundos restantes a string con dos dígitos
+                        {
+                            "$cond": [
+                                { "$lt": [
+                                    { "$mod": [
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                1000
+                                            ]}
+                                        },
+                                        60
+                                    ]},
+                                    10
+                                ]},
+                                # Si los segundos son menores que 10, agrega un 0 delante
+                                { "$concat": [
+                                    "0",
+                                    { "$toString": {
+                                        "$mod": [
+                                            { "$floor": {
+                                                "$divide": [
+                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                    1000
+                                                ]}
+                                            },
+                                            60
+                                        ]
+                                    }}
+                                ]},
+                                # Si no, usa el valor tal cual
+                                { "$toString": {
+                                    "$mod": [
+                                        { "$floor": {
+                                            "$divide": [
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                1000
+                                            ]}
+                                        },
+                                        60
+                                    ]
+                                }}
+                            ]
+                        },
+                        " min"
+                    ]
+                }
+            
+             }
+        )
+
+        # Crear un diccionario para mapear stripped_alarmId a sus datos
+        alarm_data_map = {}
+        for alarma in cursor:
+            stripped_id = alarma.get("alarmId", "")
+            origen_id = alarma.get("origenId", "")
+            
+
+            # Verificar si alarmId es igual a origenId
+            if stripped_id == origen_id:
+                origen_id_procesado = "-"
+            else:
+                origen_id_procesado = procesar_origen_id(origen_id)
+
+            alarm_data_map[stripped_id] = {
+                "origenId": origen_id_procesado,
+                "alarmClearedTime": format_datetime_UPD(alarma.get("alarmClearedTime")),
+                "timeDiffRep": alarma.get("timeDiffRep"),
+                "alarmState":  alarma.get("alarmState")
+
+            }
+
+        # Preparar la lista de alarmas actualizadas para la respuesta
+        updated_alarms = []
+        for full_alarm_id in original_alarm_ids:
+            # Extraer stripped_id del full_alarm_id
+            stripped_id = full_alarm_id[4:] if len(full_alarm_id) > 4 else full_alarm_id
+            if stripped_id in alarm_data_map:
+                # Reconstruir el alarmId completo (incluyendo los primeros 4 caracteres)
+                alarm_data = {
+                    "alarmId": full_alarm_id,  # Mantener el alarmId completo con prefijo
+                    "origenId": alarm_data_map[stripped_id]["origenId"],
+                    "alarmClearedTime": alarm_data_map[stripped_id]["alarmClearedTime"],
+                    "timeDiffRep": alarm_data_map[stripped_id]["timeDiffRep"],
+                    "alarmState": alarm_data_map[stripped_id]["alarmState"]
+                }
+            else:
+                # Si no se encuentra el alarmId, devolver valores por defecto
+                alarm_data = {
+                    "alarmId": full_alarm_id,  # Mantener el alarmId completo con prefijo
+                    "origenId": "-",
+                    "alarmClearedTime": "-"
+                }
+            updated_alarms.append(alarm_data)
+
+        return jsonify({"data": updated_alarms}), 200
+
+    except Exception as e:
+        logger.error(f"Error en /update_visible_alarms: {str(e)}", exc_info=True)
+        return jsonify({"error": "Ocurrió un error al actualizar las alarmas"}), 500
 
 
 # Ruta para exportar los datos

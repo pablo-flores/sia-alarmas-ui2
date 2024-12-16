@@ -3,6 +3,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="author" content="pabflores@teco.com.ar">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Alarmas del Outage Manager</title>
@@ -48,16 +49,23 @@
                 Service Impact Analysis
                 <!-- Botón de expansión/contracción -->
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
-                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.6 - EN PRUEBAS</div>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.7 - EN PRUEBAS</div>   
                 <div class="refresh-container">
+
                     <!-- Toggle Switch con Tooltip Personalizado -->
                     <div class="switch-container">
-                        <label class="switch" title="Habilitar o deshabilitar la actualización automática de la grilla cada 10 segundos.">
+                        <label class="switch" title="Habilitar o deshabilitar actualización automática cada 10 segundos">
                             <input type="checkbox" id="auto-refresh-toggle" checked aria-label="Habilitar o deshabilitar la actualización automática de la grilla cada 10 segundos.">
                             <span class="slider round"></span>
                         </label>
                         <span class="tooltip-text">Habilitar o deshabilitar la actualización automática</span>
-                    </div>                    
+
+                        <label class="switch" title="Actualizar solo Filas Visibles cada 10 segundos.">
+                            <input type="checkbox" id="visible-rows-refresh-toggle" checked aria-label="Actualizar solo Filas Visibles cada 10 segundos.">
+                            <span class="slider round"></span>
+                        </label>        
+                        <span class="tooltip-text">Habilitar o deshabilitar la actualización automática</span>                                        
+                    </div>                                    
 
                     <a href="javascript:(window.location.href = window.location.href)" class="btn-modern">Refresh - Foto: <span id="local-time"></span></a>        
                     <div id="progress-container">

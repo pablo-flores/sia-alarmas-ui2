@@ -185,17 +185,6 @@ body, html {
     /* Tamaño más pequeño solo para Alarm ID */
 }
 
-.refresh-container {
-    text-align: right;
-    margin-left: auto;
-    /* Mueve el botón completamente a la derecha */
-    font-size: 0.7vw;
-    /*display: flex;*/
-    /* Flexbox para alinear elementos internamente */
-    align-items: center;
-    /* Centra verticalmente el botón */
-}
-
 
 .btn-modern {
     display: flex;    /* Flexbox para alinear elementos internamente */
@@ -847,7 +836,7 @@ hr {
     border: 2px solid rgb(255, 255, 255);
     border-top-color: #1e6797; /* Color del spinner */
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 2s linear infinite;
     margin-left: 2px; /* Espacio entre el texto y el spinner */
     vertical-align: middle; /* Alineación vertical con el texto */
 }
@@ -871,8 +860,8 @@ hr {
     display: inline-block;
     width: 26px;
     height: 13px;
-    margin-right: 5px; /* Espacio entre el switch y el botón de Refresh */
-    vertical-align: middle; /* Alinear verticalmente con el botón */
+    margin-right: 1px;
+    vertical-align: middle;
 }
 
 .switch input {
@@ -888,9 +877,10 @@ hr {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
+    background-color: #b6abab;
+    transition: background-color 0.8s, border 0.8s;
     border-radius: 12px;
+    border: 1px solid black;
 }
 
 .slider:before {
@@ -898,15 +888,28 @@ hr {
     content: "";
     height: 9px;
     width: 9px;
-    left: 2px;
-    bottom: 2px;
+    top: 50%; /* Centrar verticalmente */
+    left: 2px; /* Posición inicial horizontal */
+    transform: translateY(-50%); /* Ajuste para centrar verticalmente */
     background-color: white;
-    transition: 0.8s;
-    border-radius: 50%;
+    transition: background-color 0.1s, transform 1.2s;
+    border-radius: 50%; /* Botón circular */
 }
 
+.switch input:checked + .slider {
+    background-color: #3b3d3c;
+    border: 1px solid black;
+}
+
+.switch input:checked + .slider:before {
+    background-color: red;
+    transform: translate(13px, -50%); /* Mover horizontalmente y mantener centrado */
+}
+
+
+
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #000000;
 }
 
 input:focus + .slider {
@@ -919,10 +922,55 @@ input:checked + .slider:before {
 
 /* Estilos opcionales para el botón de Refresh y el contenedor */
 .refresh-container {
-    display: flex;
+    display: flex;   /* Flexbox para alinear elementos internamente */
     align-items: center;
     flex-wrap: wrap; /* Permitir que los elementos se envuelvan en pantallas pequeñas */
+
+    /*text-align: right;*/
+    margin-left: auto;
+    /* Mueve el botón completamente a la derecha */
+    font-size: 0.7vw;
+}
+    
+
+/***********************************************************/
+
+/* Clase para resaltar la celda actualizada */
+.updated-cell {
+    background-color: #db5a55; /* Amarillo claro para resaltar */
+    transition: background-color 30s ease; /* Transición suave de 3 segundos */
+}
+
+/* Estado final después de la transición */
+.updated-cell.fade-out {
+    background-color: transparent; /* Vuelve al fondo original */
 }
 
 /***********************************************************/
 
+/* Contenedor Padre para los Toggles */
+.toggles-wrapper {
+    display: flex; /* Utiliza Flexbox */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    gap: 20px; /* Espacio entre los toggles */
+    margin-bottom: 20px; /* Espacio inferior si es necesario */
+}
+
+/***********************************************************/
+/* Estilos existentes para cada Toggle */
+
+.toggle-container {
+
+    align-items: center;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.toggle-container label {
+    align-items: center;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/***********************************************************/

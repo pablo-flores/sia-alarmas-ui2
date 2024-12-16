@@ -243,7 +243,6 @@ function processStringForDisplay(data) {
 // Declarar 'table' en el ámbito global
 var table;
 var autoRefreshInterval; // Variable para almacenar el ID del intervalo
-var visibleRowsRefreshInterval;
 
 // Inicialización de DataTable con procesamiento del lado del servidor
 $(document).ready(function() {
@@ -251,7 +250,6 @@ $(document).ready(function() {
     $('#alarmTable').hide();
 
     table = $('#alarmTable').DataTable({
-        "rowId": 'alarmId',
         "serverSide": true,
         "ajax": {
             "url": "/get_alarmas",
@@ -313,9 +311,7 @@ $(document).ready(function() {
 
                         //console.log('Rendering T-to Repar for row:', row);
 
-                        //console.log('Rendering T-to Repar for row:', row.alarmClearedTime);
                         const alarmClearedTime = row.alarmClearedTime;
-                        //console.log('Rendering T-to Repar for row:', alarmClearedTime);
 
                         if (alarmClearedTime && alarmClearedTime !== '-') {
                             if (data.length > 9) {
@@ -334,9 +330,7 @@ $(document).ready(function() {
                                     data = data.split(':')[0] + ' min';
                                 }
                                 const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-
-                                //console.log('alarmReportingTimeFull T-to Repar for row:', row.alarmClearedTime);                                                                
-
+                                                                
                                 return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTimeFull}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                                 
                             } else {
@@ -403,8 +397,7 @@ $(document).ready(function() {
             {
                 "targets": 1, // origenId
                 "render": function (data, type, row) {
-                    //const cssClass = data === '-' ? 'text-center' : 'text-left';
-                    const cssClass = data === '-' ? 'text-center origenId' : 'text-left origenId';
+                    const cssClass = data === '-' ? 'text-center' : 'text-left';
                     return `<div class="${cssClass}">${data}</div>`;
                 }
             },
@@ -517,8 +510,7 @@ $(document).ready(function() {
                 "targets": 9, // alarmClearedTime
                 "render": function (data, type) {
                     if (type === 'display') {
-                        //return `<div style="text-align: center;">${data}</div>`;
-                        return `<div class="text-center alarmClearedTime">${data}</div>`;
+                        return `<div style="text-align: center;">${data}</div>`;
                     }
                     return data;
                 }
@@ -664,13 +656,20 @@ $(document).ready(function() {
     $('#loading').hide();
     $('#alarmTable').show();
 
-    console.log('----------------------avanza table---------------------');
+    // Configurar el intervalo para recargar la tabla cada 30 segundos
+    //setInterval(function() {
+//
+    //    if (table) {
+    //        console.log('Recargando DataTable...');
+    //        table.ajax.reload(null, false); // false para mantener la paginación actual
+    //    } else {
+    //        console.warn('DataTable no está inicializada.');
+    //    }
+    //}, 10000); // 30000 ms = 30 segundos
 
-
-    // Inicializar el estado del Toggle Switch para Auto-Refresh Completo desde localStorage
+    // Inicializar el estado del Toggle Switch desde localStorage
     var toggleSwitch = $('#auto-refresh-toggle');
     var isAutoRefreshEnabled = localStorage.getItem('autoRefreshEnabled');
-
 
     if (isAutoRefreshEnabled === null) {
         // Si no hay un valor guardado, usa el estado por defecto (checked)
@@ -688,7 +687,7 @@ $(document).ready(function() {
         }
     }
 
-    // Manejar el evento de cambio del Toggle Switch para Auto-Refresh Completo
+    // Manejar el evento de cambio del Toggle Switch
     toggleSwitch.on('change', function() {
         var isChecked = $(this).is(':checked');
         localStorage.setItem('autoRefreshEnabled', isChecked);
@@ -701,278 +700,43 @@ $(document).ready(function() {
         }
     });
 
-/**/
 
-    // Declarar variables para los toggles
-    var autoRefreshToggle = $('#auto-refresh-toggle');
-    var visibleRowsToggle = $('#visible-rows-refresh-toggle');
 
-    // Variables para prevenir recursión en los eventos
-    var isSyncing = false;
-
-    // Obtener el estado inicial desde localStorage
-    var isAutoRefreshEnabled = localStorage.getItem('autoRefreshEnabled') === 'true';
-    var isVisibleRowsAutoRefreshEnabled = localStorage.getItem('visibleRowsAutoRefreshEnabled') === 'true';
-
-    // Establecer el estado inicial de los toggles
-    autoRefreshToggle.prop('checked', isAutoRefreshEnabled);
-    visibleRowsToggle.prop('checked', isVisibleRowsAutoRefreshEnabled);
-
-    // Inicializar los toggles si es necesario (solo si estás usando una biblioteca)
-    // Por ejemplo, si usas Bootstrap Switch:
-    // autoRefreshToggle.bootstrapSwitch();
-    // visibleRowsToggle.bootstrapSwitch();
-
-    // Iniciar los auto-refresh según el estado inicial
-    if (isAutoRefreshEnabled) {
-        startAutoRefresh();
-    }
-    if (isVisibleRowsAutoRefreshEnabled) {
-        startVisibleRowsAutoRefresh();
-    }
-
-    // Manejador de eventos para el toggle de Auto-Refresh Completo
-    autoRefreshToggle.on('change', function() {
-        if (isSyncing) return; // Evita ejecución si es sincronización
-
-        var isChecked = $(this).is(':checked');
-        localStorage.setItem('autoRefreshEnabled', isChecked);
-
-        if (isChecked) {
-            // Desactivar el otro toggle si está activo
-            if (visibleRowsToggle.is(':checked')) {
-                isSyncing = true;
-                visibleRowsToggle.prop('checked', false);
-                // Si usas una biblioteca, actualiza el estado visualmente usando su API
-                // visibleRowsToggle.bootstrapSwitch('state', false);
-                isSyncing = false;
-                localStorage.setItem('visibleRowsAutoRefreshEnabled', false);
-                stopVisibleRowsAutoRefresh();
-                console.log('Auto-refresh de filas visibles deshabilitado por exclusividad.');
-            }
-            startAutoRefresh();
-            console.log('Auto-refresh completo habilitado.');
-        } else {
-            stopAutoRefresh();
-            console.log('Auto-refresh completo deshabilitado.');
-        }
-    });
-
-    // Manejador de eventos para el toggle de Auto-Refresh de Filas Visibles
-    visibleRowsToggle.on('change', function() {
-        if (isSyncing) return; // Evita ejecución si es sincronización
-
-        var isChecked = $(this).is(':checked');
-        localStorage.setItem('visibleRowsAutoRefreshEnabled', isChecked);
-
-        if (isChecked) {
-            // Desactivar el otro toggle si está activo
-            if (autoRefreshToggle.is(':checked')) {
-                isSyncing = true;
-                autoRefreshToggle.prop('checked', false);
-                // Si usas una biblioteca, actualiza el estado visualmente usando su API
-                // autoRefreshToggle.bootstrapSwitch('state', false);
-                isSyncing = false;
-                localStorage.setItem('autoRefreshEnabled', false);
-                stopAutoRefresh();
-                console.log('Auto-refresh completo deshabilitado por exclusividad.');
-            }
-            startVisibleRowsAutoRefresh();
-            console.log('Auto-refresh de filas visibles habilitado.');
-        } else {
-            stopVisibleRowsAutoRefresh();
-            console.log('Auto-refresh de filas visibles deshabilitado.');
-        }
-    });
-
-    // Funciones de auto-refresh
+       // Función para iniciar la recarga automática
     function startAutoRefresh() {
         if (!autoRefreshInterval) {
             autoRefreshInterval = setInterval(function() {
                 console.log('Recargando DataTable automáticamente...');
                 table.ajax.reload(null, false); // false para mantener la paginación actual
-            }, 10000); // 10 segundos
-            console.log('Auto-refresh completo iniciado.');
+            }, 10000); // 30000 ms = 30 segundos
+            console.log('Auto-refresh iniciado.');
         }
     }
 
+    // Función para detener la recarga automática
     function stopAutoRefresh() {
         if (autoRefreshInterval) {
             clearInterval(autoRefreshInterval);
             autoRefreshInterval = null;
-            console.log('Auto-refresh completo detenido.');
+            console.log('Auto-refresh detenido.');
         }
     }
 
-    function startVisibleRowsAutoRefresh() {
-        if (!visibleRowsRefreshInterval) {
-            visibleRowsRefreshInterval = setInterval(function() {
-                console.log('Actualizando filas visibles...');
-                stopAutoRefresh(); // Asegura que no se solapen
-                refreshVisibleRows();
-            }, 10000); // Intervalo de 10 segundos
-            console.log('Auto-refresh de filas visibles iniciado.');
-        }
+    // Inicializar el estado del Toggle Switch según esté marcado o no
+    var toggleSwitch = $('#auto-refresh-toggle');
+    if (toggleSwitch.is(':checked')) {
+        startAutoRefresh();
     }
 
-    function stopVisibleRowsAutoRefresh() {
-        if (visibleRowsRefreshInterval) {
-            clearInterval(visibleRowsRefreshInterval);
-            visibleRowsRefreshInterval = null;
-            console.log('Auto-refresh de filas visibles detenido.');
-        }
-    }
-
-    if (isVisibleRowsAutoRefreshEnabled === null) {
-        // Si no hay un valor guardado, usa el estado por defecto (checked)
-        localStorage.setItem('visibleRowsAutoRefreshEnabled', 'true');
-        //visibleRowsToggleSwitch.prop('checked', true);
-        visibleRowsToggle.prop('checked', true);
-        startVisibleRowsAutoRefresh();
-    } else {
-        // Establece el estado del Toggle Switch según el valor guardado
-        var isChecked = (isVisibleRowsAutoRefreshEnabled === 'true');
-        //visibleRowsToggleSwitch.prop('checked', isChecked);
-        visibleRowsToggle.prop('checked', isChecked);
-        if (isChecked) {
-            stopAutoRefresh();
-            startVisibleRowsAutoRefresh();
-        } else {
-            stopVisibleRowsAutoRefresh();
-        }
-    }
-
-    // Evento para el toggle de filas visibles
-    //visibleRowsToggleSwitch.on('change', function() {
-    //    const isChecked = $(this).is(':checked');
-    //    localStorage.setItem('visibleRowsAutoRefreshEnabled', isChecked);
-    //    if (isChecked) {
-    //        stopAutoRefresh();
-    //        startVisibleRowsAutoRefresh();
-    //        console.log('Auto-refresh de filas visibles habilitado.');
-    //    } else {
-    //        stopVisibleRowsAutoRefresh();
-    //        console.log('Auto-refresh de filas visibles deshabilitado.');
-    //    }
-    //});
-
-
-    // Evento para el toggle de auto-refresh completo
-    $('#auto-refresh-toggle').on('change', function() {
-        const isChecked = $(this).is(':checked');
-        localStorage.setItem('autoRefreshEnabled', isChecked);
-        if (isChecked) {
-            stopVisibleRowsAutoRefresh(); // Asegura que no se solapen
+    // Manejar el evento de cambio del Toggle Switch
+    toggleSwitch.on('change', function() {
+        if ($(this).is(':checked')) {
             startAutoRefresh();
         } else {
             stopAutoRefresh();
         }
     });
 
-    // Evento para el toggle de auto-refresh de filas visibles
-    $('#visible-rows-refresh-toggle').on('change', function() {
-        const isChecked = $(this).is(':checked');
-        localStorage.setItem('visibleRowsAutoRefreshEnabled', isChecked);
-        if (isChecked) {
-            stopAutoRefresh(); // Asegura que no se solapen
-            startVisibleRowsAutoRefresh();
-        } else {
-            stopVisibleRowsAutoRefresh();
-        }
-    });
-
-    // Función para actualizar filas visibles
-    async function refreshVisibleRows() {
-        try {
-            // Obtener las filas actualmente visibles en la página
-            const visibleRows = table.rows({ page: 'current' }).data();
-            const originalAlarmIds = [];
-    
-            // Extraer los alarmId de las filas visibles
-            for (let i = 0; i < visibleRows.length; i++) {
-                originalAlarmIds.push(visibleRows[i].alarmId);
-            }
-    
-            if (originalAlarmIds.length === 0) {
-                console.warn('No hay alarm_ids visibles para actualizar.');
-                return; // No hay filas visibles
-            }
-    
-            // Eliminar duplicados
-            const uniqueAlarmIds = [...new Set(originalAlarmIds)];
-    
-            // Obtener el token CSRF desde la etiqueta meta
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-            // Enviar solicitud al backend para obtener los campos actualizados
-            const response = await fetch('/update_visible_alarms', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken  // Incluir el token CSRF en la cabecera
-                },
-                body: JSON.stringify({ alarm_ids: uniqueAlarmIds })
-            });
-    
-            if (!response.ok) {
-                throw new Error(`Error en la solicitud: ${response.statusText}`);
-            }
-    
-            const result = await response.json();
-    
-            if (result.error) {
-                console.error('Error al actualizar filas visibles:', result.error);
-                return;
-            }
-    
-            const updatedData = result.data;
-    
-            // Iterar sobre cada alarma actualizada y actualizar las celdas correspondientes
-            updatedData.forEach(alarm => {
-                // Encontrar la fila correspondiente en DataTables usando alarmId
-                const row = table.rows().data().toArray().find(r => r.alarmId === alarm.alarmId);
-                if (row) {
-                    // Obtener el índice de la fila
-                    const rowIndex = table.rows().eq(0).filter(function(idx) {
-                        return table.row(idx).data().alarmId === alarm.alarmId;
-                    })[0];
-    
-                    if (rowIndex !== undefined) {
-                        // Actualizar 'origenId' en la columna 1
-                        table.cell(rowIndex, 1).data(alarm.origenId);
-    
-                        // Actualizar 'alarmClearedTime' en la columna 9
-                        table.cell(rowIndex, 9).data(alarm.alarmClearedTime);
-
-                        // **Actualizar 'timeDiffRep' en la columna 2**
-                        table.cell(rowIndex, 2).data(alarm.alarmState);                        
-
-                        // **Actualizar 'timeDiffRep' en la columna 10**
-                        table.cell(rowIndex, 10).data(alarm.timeDiffRep);
-
-                        // Opcional: Invalidar la celda para forzar su re-renderizado
-                        //table.cell(rowIndex, 10).invalidate();
-
-                        // Si hay otros campos que desees actualizar, agrégalos aquí
-                        // Ejemplo:
-                        // table.cell(rowIndex, columnaX).data(alarm.campoX);
-                    } else {
-                        console.warn(`Fila con alarmId ${alarm.alarmId} no encontrada.`);
-                    }
-                } else {
-                    console.warn(`Datos de fila para alarmId ${alarm.alarmId} no encontrados.`);
-                }
-            });
-    
-            // Redibujar la tabla para reflejar los cambios sin recargar datos desde el servidor
-            // table.draw(false); // Esta línea se ha comentado para evitar la llamada a /get_alarmas
-    
-        } catch (error) {
-            console.error('Error en refreshVisibleRows:', error);
-        }
-    }
-    
-    
 
 });
 

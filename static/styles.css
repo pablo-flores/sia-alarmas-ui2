@@ -936,14 +936,16 @@ input:checked + .slider:before {
 /***********************************************************/
 
 /* Clase para resaltar la celda actualizada */
+/* Clase para resaltar la celda actualizada */
 .updated-cell {
-    background-color: #db5a55; /* Amarillo claro para resaltar */
-    transition: background-color 30s ease; /* Transición suave de 3 segundos */
+    background-color: orange; /* Rojo claro para resaltar */
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */
 }
 
 /* Estado final después de la transición */
 .updated-cell.fade-out {
     background-color: transparent; /* Vuelve al fondo original */
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */    
 }
 
 /***********************************************************/

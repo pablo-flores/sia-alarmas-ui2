@@ -768,7 +768,7 @@ def update_visible_alarms():
 
         # Consulta a la base de datos usando los stripped_alarm_ids
         cursor = mongo.db.alarm.find(
-            {"alarmId": {"$in": stripped_alarm_ids}, "alarmState": {"$in": ['RAISED', 'RETRY', 'CLEARED']} }, # sin UPDATE para evitar celda pintada
+            {"alarmId": {"$in": stripped_alarm_ids}},
             {"alarmId": 1, "origenId": 1, "alarmClearedTime": 1, "networkElementId": 1,
                 "alarmState": {
                     "$cond": {

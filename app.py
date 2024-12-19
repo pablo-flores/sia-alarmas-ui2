@@ -263,6 +263,9 @@ def get_alarmas():
 
     logger.info(f"Sorting by: {sort_field}, Direction: {order_direction}, search_value: '{search_value}'")
 
+    # Calcula la hora actual en Python
+    now = datetime.utcnow()
+
     # Construir el filtro de búsqueda si se proporciona un valor de búsqueda
     search_filter = {}
     if search_value:
@@ -337,7 +340,7 @@ def get_alarmas():
                 # Calcular 'timeDiffNumRep' sin redondeo 
                 "timeDiffNumRep": {
                     "$divide": [
-                        {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},
+                        {"$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"]},
                         60000  # Convertir milisegundos a minutos
                     ]
                 },
@@ -351,7 +354,7 @@ def get_alarmas():
                             "$cond": [
                                 { "$lt": [
                                     #{ "$subtract": ["$alarmClearedTime", "$alarmRaisedTime"] },
-                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},                                    
+                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"]},                                    
                                     0
                                 ]},
                                 "-",  # Si es negativo, agregar "-"
@@ -364,7 +367,7 @@ def get_alarmas():
                                 { "$lt": [
                                     { "$floor": {
                                         "$divide": [
-                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                             60000
                                         ]}
                                     },
@@ -376,7 +379,7 @@ def get_alarmas():
                                     { "$toString": {
                                         "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 60000
                                             ]
                                         }
@@ -386,7 +389,7 @@ def get_alarmas():
                                 { "$toString": {
                                     "$floor": {
                                         "$divide": [
-                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                             60000
                                         ]
                                     }
@@ -401,7 +404,7 @@ def get_alarmas():
                                     { "$mod": [
                                         { "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 1000
                                             ]}
                                         },
@@ -416,7 +419,7 @@ def get_alarmas():
                                         "$mod": [
                                             { "$floor": {
                                                 "$divide": [
-                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                     1000
                                                 ]}
                                             },
@@ -429,7 +432,7 @@ def get_alarmas():
                                     "$mod": [
                                         { "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 1000
                                             ]}
                                         },
@@ -773,6 +776,9 @@ def update_visible_alarms():
             logger.warning("No se recibieron alarm_ids en la solicitud.")
             return jsonify({"error": "No se recibieron alarm_ids"}), 400
 
+        # Calcula la hora actual en Python
+        now = datetime.utcnow()
+
         # Consulta a la base de datos usando los alarm_ids originales
         cursor = mongo.db.alarm.find(
             #{"alarmId": {"$in": stripped_alarm_ids}, "alarmState": {"$in": ['RAISED', 'RETRY', 'CLEARED']} }, # sin UPDATE para evitar celda pintada
@@ -793,7 +799,7 @@ def update_visible_alarms():
                             "$cond": [
                                 { "$lt": [
                                     #{ "$subtract": ["$alarmClearedTime", "$alarmRaisedTime"] },
-                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"]},                                    
+                                    {"$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"]},  
                                     0
                                 ]},
                                 "-",  # Si es negativo, agregar "-"
@@ -806,7 +812,7 @@ def update_visible_alarms():
                                 { "$lt": [
                                     { "$floor": {
                                         "$divide": [
-                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                             60000
                                         ]}
                                     },
@@ -818,7 +824,7 @@ def update_visible_alarms():
                                     { "$toString": {
                                         "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 60000
                                             ]
                                         }
@@ -828,7 +834,7 @@ def update_visible_alarms():
                                 { "$toString": {
                                     "$floor": {
                                         "$divide": [
-                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                            { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                             60000
                                         ]
                                     }
@@ -843,7 +849,7 @@ def update_visible_alarms():
                                     { "$mod": [
                                         { "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 1000
                                             ]}
                                         },
@@ -858,7 +864,7 @@ def update_visible_alarms():
                                         "$mod": [
                                             { "$floor": {
                                                 "$divide": [
-                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                    { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                     1000
                                                 ]}
                                             },
@@ -871,7 +877,7 @@ def update_visible_alarms():
                                     "$mod": [
                                         { "$floor": {
                                             "$divide": [
-                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", "$$NOW"] },"$alarmReportingTime"] }},
+                                                { "$abs": { "$subtract": [{ "$ifNull": ["$alarmClearedTime", now] },"$alarmReportingTime"] }},
                                                 1000
                                             ]}
                                         },

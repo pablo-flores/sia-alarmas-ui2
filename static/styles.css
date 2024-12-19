@@ -942,10 +942,26 @@ input:checked + .slider:before {
     transition: background-color 3s ease; /* Transición suave de 3 segundos */
 }
 
+
+/* Clase para resaltar la celda actualizada */
+.updated-cell-medio {
+    background-color: yellow; /* Rojo claro para resaltar */
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */
+}
+
+
+/* Clase para resaltar la celda actualizada */
+.updated-cell-exit {
+    background-color: whitesmoke; /* Rojo claro para resaltar */
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */
+    font-weight: bold;  
+}
+
+
 /* Estado final después de la transición */
 .updated-cell.fade-out {
     background-color: transparent; /* Vuelve al fondo original */
-    transition: background-color 3s ease; /* Transición suave de 3 segundos */    
+    /*transition: background-color 3s ease; /* Transición suave de 3 segundos */      
 }
 
 /***********************************************************/

@@ -251,7 +251,8 @@ $(document).ready(function() {
     $('#alarmTable').hide();
 
     table = $('#alarmTable').DataTable({
-        "rowId": 'alarmId',
+        //"rowId": 'alarmId',
+        "rowId": '_id',
         "serverSide": true,
         "ajax": {
             "url": "/get_alarmas",
@@ -294,8 +295,8 @@ $(document).ready(function() {
             { "data": "timeResolution" },
             { "data": "plays", "visible": false },
             { "data": "sequence", "visible": false },
-            { "data": "alarmReportingTimeFull", "visible": false }
-            //{ "data": null, "defaultContent": '', "title": "T-to R", "orderable": false } // Nueva columna            
+            { "data": "alarmReportingTimeFull", "visible": false },
+            { "data": "_id", "visible": false },  // Incluir pero no mostrar      
         ],
         "autoWidth": true,
         "paging": true,
@@ -841,7 +842,7 @@ $(document).ready(function() {
     });
     */
 
-    
+    /*******************************************************************************/
     // Definir los índices de las columnas a excluir del resaltado
     const excludedColumns = [10];
 
@@ -851,19 +852,23 @@ $(document).ready(function() {
             // Obtener las filas actualmente visibles en la página
             const visibleRows = table.rows({ page: 'current' }).data();
             const originalAlarmIds = [];
+            const ids = visibleRows.map(row => row._id);
+
 
             // Extraer los alarmId de las filas visibles
             for (let i = 0; i < visibleRows.length; i++) {
-                originalAlarmIds.push(visibleRows[i].alarmId);
+                originalAlarmIds.push(visibleRows[i]._id);
             }
 
             if (originalAlarmIds.length === 0) {
                 console.warn('No hay alarm_ids visibles para actualizar.');
                 return; // No hay filas visibles
             }
+//
+           // // Eliminar duplicados
+           // const uniqueAlarmIds = [...new Set(originalAlarmIds)];
 
-            // Eliminar duplicados
-            const uniqueAlarmIds = [...new Set(originalAlarmIds)];
+           const uniqueAlarmIds = [...new Set(originalAlarmIds)];
 
             // Obtener el token CSRF desde la etiqueta meta
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -876,6 +881,7 @@ $(document).ready(function() {
                     'X-CSRFToken': csrfToken  // Incluir el token CSRF en la cabecera
                 },
                 body: JSON.stringify({ alarm_ids: uniqueAlarmIds })
+                //body: JSON.stringify({ ids: uniqueAlarmIds })
             });
 
             if (!response.ok) {
@@ -897,8 +903,15 @@ $(document).ready(function() {
                 const cell = table.cell(rowIndex, colIndex);
                 const currentData = cell.data();
 
-                // Comparar el nuevo dato con el actual
-                if (currentData !== newData) {
+                // Asegúrate de convertir ambos a cadenas y normalizar los datos
+                function normalizeData(data) {
+                    return String(data).trim().toLowerCase();
+                }
+
+                if (normalizeData(currentData) !== normalizeData(newData)) {
+                    //console.info(`Datos diferentes detectados: ${normalizeData(currentData)} !== ${normalizeData(newData)}`);
+                
+                
                     // Actualizar el dato de la celda
                     cell.data(newData);
 
@@ -909,16 +922,15 @@ $(document).ready(function() {
                     if (!excludedColumns.includes(colIndex)) {
                         // Agregar la clase 'updated-cell' si no la tiene
                         if (!$(cellNode).hasClass('updated-cell')) {
+                            
                             $(cellNode).addClass('updated-cell');
 
-                            // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
-                            setTimeout(() => {
-                                $(cellNode).removeClass('updated-cell').addClass('fade-out');
 
+                            // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
+                            setTimeout(() => {  $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                 // Remover la clase 'fade-out' después de la transición
-                                setTimeout(() => {
-                                    $(cellNode).removeClass('fade-out');
-                                }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
+                                setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
+                                setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
                             }, 30000); // Tiempo durante el cual la celda permanece resaltada
                         }
                     }
@@ -927,8 +939,8 @@ $(document).ready(function() {
 
             // Iterar sobre cada alarma actualizada y actualizar las celdas correspondientes
             updatedData.forEach(alarm => {
-                // Encontrar el índice de la fila correspondiente en DataTables usando alarmId
-                const rowIndex = table.rows().indexes().filter(idx => table.row(idx).data().alarmId === alarm.alarmId)[0];
+                // Encontrar el índice de la fila correspondiente en DataTables usando _id
+                const rowIndex = table.rows().indexes().filter(idx => table.row(idx).data()._id === alarm._id)[0];
 
                 if (rowIndex !== undefined) {
                     // Actualizar 'origenId' en la columna 1
@@ -947,7 +959,7 @@ $(document).ready(function() {
                     // Ejemplo:
                     // updateCellIfChanged(rowIndex, columnaX, alarm.campoX);
                 } else {
-                    console.warn(`Fila con alarmId ${alarm.alarmId} no encontrada.`);
+                    console.warn(`Fila con _id ${alarm._id} no encontrada.`);
                 }
             });
 

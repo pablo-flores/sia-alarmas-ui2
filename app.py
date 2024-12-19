@@ -610,7 +610,7 @@ def get_alarmas():
         },
         {
             "$project": {
-                "_id": 0,
+                "_id": 1,
                 "outageId": 1,
                 "alarmId": 1,
                 "alarmType": 1,
@@ -677,6 +677,7 @@ def get_alarmas():
         alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
         alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))        
         alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
+        alarma['_id'] = convert_object_ids(alarma.get('_id'))
 
         #logger.info(f"alarmReportingTimeFull {alarma['alarmReportingTimeFull']}")
 
@@ -745,7 +746,20 @@ def procesar_origen_id(origen_id):
     else:
         return '-'
 
-    
+
+def convert_object_ids(data):
+    if isinstance(data, list):  # Si es una lista, iteramos
+        for item in data:
+            if '_id' in item and isinstance(item['_id'], ObjectId):
+                item['_id'] = str(item['_id'])
+        return data
+    elif isinstance(data, ObjectId):  # Si es directamente un ObjectId
+        return str(data)
+    else:
+        return data  # No es ni lista ni ObjectId, devolvemos como está
+
+
+
 ##########
 
 @app.route('/update_visible_alarms', methods=['POST'])
@@ -759,16 +773,10 @@ def update_visible_alarms():
             logger.warning("No se recibieron alarm_ids en la solicitud.")
             return jsonify({"error": "No se recibieron alarm_ids"}), 400
 
-        # Eliminar los primeros 4 caracteres para la consulta
-        stripped_alarm_ids = [aid[4:] for aid in original_alarm_ids if isinstance(aid, str) and len(aid) > 4]
-        
-        if not stripped_alarm_ids:
-            logger.warning("No se proporcionaron alarm_ids válidos después de la modificación.")
-            return jsonify({"error": "No se proporcionaron alarm_ids válidos"}), 400
-
-        # Consulta a la base de datos usando los stripped_alarm_ids
+        # Consulta a la base de datos usando los alarm_ids originales
         cursor = mongo.db.alarm.find(
-            {"alarmId": {"$in": stripped_alarm_ids}, "alarmState": {"$in": ['RAISED', 'RETRY', 'CLEARED']} }, # sin UPDATE para evitar celda pintada
+            #{"alarmId": {"$in": stripped_alarm_ids}, "alarmState": {"$in": ['RAISED', 'RETRY', 'CLEARED']} }, # sin UPDATE para evitar celda pintada
+            {"_id": {"$in": [ObjectId(id_str) for id_str in original_alarm_ids]}},
             {"alarmId": 1, "origenId": 1, "alarmClearedTime": 1, "networkElementId": 1,
                 "alarmState": {
                     "$cond": {
@@ -879,51 +887,32 @@ def update_visible_alarms():
              }
         )
 
-        # Crear un diccionario para mapear stripped_alarmId a sus datos
-        alarm_data_map = {}
+        
+        
+        alarmas_actualizadas = []
         for alarma in cursor:
-            stripped_id = alarma.get("alarmId", "")
+
+            alarm_id = alarma.get("alarmId", "")
             origen_id = alarma.get("origenId", "")
-            
 
             # Verificar si alarmId es igual a origenId
-            if stripped_id == origen_id:
+            if alarm_id == origen_id:
                 origen_id_procesado = "-"
             else:
                 origen_id_procesado = procesar_origen_id(origen_id)
 
-            alarm_data_map[stripped_id] = {
-                "origenId": origen_id_procesado,
-                "alarmClearedTime": format_datetime_UPD(alarma.get("alarmClearedTime")),
-                "timeDiffRep": alarma.get("timeDiffRep"),
-                "alarmState":  alarma.get("alarmState")
+            alarma['_id'] = convert_object_ids(alarma.get('_id'))
+            alarma['alarmClearedTime'] = format_datetime_UPD(alarma.get('alarmClearedTime'))
+            alarma['origenId'] =  origen_id_procesado,
+            alarma['timeDiffRep'] = alarma.get("timeDiffRep"),
+            alarma['alarmState'] = alarma.get('alarmState', '-')
 
-            }
+            alarmas_actualizadas.append(alarma)
 
-        # Preparar la lista de alarmas actualizadas para la respuesta
-        updated_alarms = []
-        for full_alarm_id in original_alarm_ids:
-            # Extraer stripped_id del full_alarm_id
-            stripped_id = full_alarm_id[4:] if len(full_alarm_id) > 4 else full_alarm_id
-            if stripped_id in alarm_data_map:
-                # Reconstruir el alarmId completo (incluyendo los primeros 4 caracteres)
-                alarm_data = {
-                    "alarmId": full_alarm_id,  # Mantener el alarmId completo con prefijo
-                    "origenId": alarm_data_map[stripped_id]["origenId"],
-                    "alarmClearedTime": alarm_data_map[stripped_id]["alarmClearedTime"],
-                    "timeDiffRep": alarm_data_map[stripped_id]["timeDiffRep"],
-                    "alarmState": alarm_data_map[stripped_id]["alarmState"]
-                }
-            else:
-                # Si no se encuentra el alarmId, devolver valores por defecto
-                alarm_data = {
-                    "alarmId": full_alarm_id,  # Mantener el alarmId completo con prefijo
-                    "origenId": "-",
-                    "alarmClearedTime": "-"
-                }
-            updated_alarms.append(alarm_data)
-
-        return jsonify({"data": updated_alarms}), 200
+        #alarmas_actualizadas = convert_object_ids(alarmas_actualizadas)  # Convertimos los ObjectId a string
+        return jsonify({
+            "data": alarmas_actualizadas
+        }), 200
 
     except Exception as e:
         logger.error(f"Error en /update_visible_alarms: {str(e)}", exc_info=True)
@@ -931,6 +920,7 @@ def update_visible_alarms():
 
 ##########
 
+##########
 # Ruta para exportar los datos
 @app.route('/export/<format>')
 def export_data(format):

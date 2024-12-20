@@ -323,6 +323,7 @@ $(document).ready(function() {
                                 data = data.split(':')[0] + ' min';
                             }
                             const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
+                            //console.log('Rendering T-to Repar for data:', data);
 
                             return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                         }
@@ -330,16 +331,24 @@ $(document).ready(function() {
                             
                             const alarmReportingTimeFull = row.alarmReportingTimeFull;
                             if (alarmReportingTimeFull && alarmReportingTimeFull !== '-') {
-                             
-                                if (data.length > 9) {
-                                    data = data.split(':')[0] + ' min';
+                                // Limpiar corchetes si existen en 'data'
+                                let cleanedData = data;
+                                if (Array.isArray(cleanedData)) {
+                                    cleanedData = cleanedData.join(''); // Convierte array a string
+                                } else {
+                                    cleanedData = cleanedData.replace(/[\[\]]/g, ''); // Elimina corchetes si están como string
                                 }
-                                const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-
-                                //console.log('alarmReportingTimeFull T-to Repar for row:', row.alarmClearedTime);                                                                
-
-                                return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTimeFull}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                                 
+                                // Procesar 'data' si tiene más de 9 caracteres
+                                if (cleanedData.length > 9) {
+                                    cleanedData = cleanedData.split(':')[0] + ' min';
+                                }
+                                
+                                const style = cleanedData.includes('-') ? 'color: red; font-weight: bold;' : '';
+                                
+                                //console.log('Rendering alarmReportingTimeFull T-to Repar for data:', cleanedData);
+                                
+                                return `<div class="t-to-repar" data-alarmreportingtime="${alarmReportingTimeFull}" style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${cleanedData}</div>`;
                             } else {
                                 return '-';
                             }
@@ -673,7 +682,7 @@ $(document).ready(function() {
     //localStorage.clear();
 
 
-    console.log('----------------------avanza table---------------------');
+    //console.log('----------------------avanza table---------------------');
     console.log('Estado de autoRefreshEnabled:', localStorage.getItem('autoRefreshEnabled'));
     console.log('Estado de visibleRowsAutoRefreshEnabled:', localStorage.getItem('visibleRowsAutoRefreshEnabled'));
 
@@ -985,7 +994,7 @@ function padZero(number) {
     return number.toString().padStart(2, '0');
 }
 
-// Función para actualizar "T-to Repar" cada 5 segundos en formato MM:SS
+// Función para actualizar "T-to Repar" cada x segundos en formato MM:SS
 function updateTtoRepar() {
     const tToReparElements = document.querySelectorAll('.t-to-repar');
     const now = new Date();
@@ -1028,6 +1037,8 @@ function updateTtoRepar() {
                 } else {
                     formattedTime = `${minutes}:${padZero(seconds)}`;
                 }
+
+                //console.log(`Diferencia: ${formattedTime}`);
 
                 element.textContent = `${formattedTime} min`;
             } else {

@@ -65,6 +65,7 @@ def format_datetime(dt):
     else:
         return '-'
 
+
 def format_datetime_UPD(dt):
 #    if dt:
 #        if dt.tzinfo is None:
@@ -125,12 +126,266 @@ def get_incident_by_ticketid():
         return jsonify({"error": "Ocurrió un error al buscar los incidentes"}), 500
 
 
+@app.route('/get_new_alarms', methods=['POST'])
+@csrf.exempt
+def get_new_alarms():
+    try:
+        # Recibir los datos del cliente
+        data = request.get_json()
+        #logger.info(f"Datos recibidos: {data}")
+
+        # Validar si se proporcionó el _id
+        provided_id = data.get('_id')
+        if not provided_id:
+            logger.warning("Solicitud inválida: Falta el parámetro '_id'.")
+            return jsonify({"error": "No se proporcionó _id"}), 400
+
+        # Convertir el _id a ObjectId
+        try:
+            object_id = ObjectId(provided_id)
+        except Exception as e:
+            logger.warning(f"Formato inválido de _id: {provided_id}. Error: {str(e)}")
+            return jsonify({"error": "Formato de _id inválido"}), 400
+
+        # Consultar el omArrivalTimestamp del _id proporcionado
+        base_record = mongo.db.alarm.find_one({"_id": object_id}, {"omArrivalTimestamp": 1})
+        if not base_record or 'omArrivalTimestamp' not in base_record:
+            logger.warning(f"No se encontró el registro con _id: {provided_id}")
+            return jsonify({"error": f"No se encontró el registro con _id: {provided_id}"}), 404
+
+        omArrivalTimestamp = base_record['omArrivalTimestamp']
+        #logger.info(f"omArrivalTimestamp encontrado: {omArrivalTimestamp}")
+
+        # Filtros y pipeline de agregación
+        current_datetime = datetime.utcnow()
+        days_ago = datetime.now(buenos_aires_tz) - timedelta(days=days_configMap)
+
+        query_filter = {
+            "$and": [
+                {"omArrivalTimestamp": {"$gt": omArrivalTimestamp, "$lte": current_datetime}},
+                {
+                    "$or": [
+                        {"alarmState": {"$in": ['RAISED', 'UPDATED', 'RETRY']}},
+                        {"alarmState": "CLEARED", "alarmClearedTime": {"$gte": days_ago}}
+                    ]
+                }
+            ]
+        }
+
+        pipeline = [
+            {"$match": query_filter},
+            {
+                "$addFields": {
+                    "alarmState": {
+                        "$cond": {
+                            "if": {"$in": ["$alarmState", ["UPDATED", "RETRY"]]},
+                            "then": "RAISED",
+                            "else": "$alarmState"
+                        }
+                    },
+                    "timeDifferenceNumeric": {
+                        "$divide": [
+                            {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                            60000
+                        ]
+                    },
+                    "timeDifferenceNumericIncident": {
+                        "$divide": [
+                            {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                            60000
+                        ]
+                    },
+                    "timeDiffNumRep": {
+                        "$divide": [
+                            {"$subtract": [{"$ifNull": ["$alarmClearedTime", current_datetime]}, "$alarmReportingTime"]},
+                            60000
+                        ]
+                    },
+
+                    "timeDiffRep": {
+                        "$concat": [
+                            {
+                                "$toString": {
+                                    "$floor": {
+                                        "$divide": [
+                                            {"$subtract": [{"$ifNull": ["$alarmClearedTime", current_datetime]}, "$alarmReportingTime"]},
+                                            60000
+                                        ]
+                                    }
+                                }
+                            },
+                            ":",
+                            {
+                                "$toString": {
+                                    "$mod": [
+                                        {"$floor": {
+                                            "$divide": [
+                                                {"$subtract": [{"$ifNull": ["$alarmClearedTime", current_datetime]}, "$alarmReportingTime"]},
+                                                1000
+                                            ]
+                                        }},
+                                        60
+                                    ]
+                                }
+                            },
+                            " min"
+                        ]
+                    },
+                    "alarmReportingTimeFull": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d %H:%M:%S",
+                            "date": "$alarmReportingTime",
+                            "timezone": "America/Argentina/Buenos_Aires"
+                        }
+                    },                    
+                    "timeDifference": {
+                        "$concat": [
+                            {"$toString": {
+                                "$floor": {
+                                    "$divide": [
+                                        {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                                        60000
+                                    ]
+                                }
+                            }},
+                            ":",
+                            {"$toString": {
+                                "$mod": [
+                                    {"$floor": {
+                                        "$divide": [
+                                            {"$subtract": ["$omArrivalTimestamp", "$alarmRaisedTime"]},
+                                            1000
+                                        ]
+                                    }},
+                                    60
+                                ]
+                            }},
+                            " min"
+                        ]
+                    },
+                    "timeDifferenceIncident": {
+                        "$concat": [
+                            {"$toString": {
+                                "$floor": {
+                                    "$divide": [
+                                        {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                                        60000
+                                    ]
+                                }
+                            }},
+                            ":",
+                            {"$toString": {
+                                "$mod": [
+                                    {"$floor": {
+                                        "$divide": [
+                                            {"$subtract": ["$alarmReportingTime", "$alarmRaisedTime"]},
+                                            1000
+                                        ]
+                                    }},
+                                    60
+                                ]
+                            }},
+                            " min"
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 1,
+                    "alarmId": 1,
+                    "alarmType": 1,
+                    "alarmState": 1,
+                    "clients": 1,
+                    "TypeNetworkElement": "$networkElement.type",
+                    "networkElementId": 1,
+                    "timeResolution": 1,
+                    "sourceSystemId": 1,
+                    "origenId": 1,
+                    "inicioOUM": "$omArrivalTimestamp",
+                    "alarmRaisedTime": 1,
+                    "alarmClearedTime": 1,
+                    "alarmReportingTime": 1,
+                    "sequence": 1,
+                    "plays": 1,
+                    "timeDifference": 1,
+                    "timeDifferenceNumeric": 1,
+                    "timeDifferenceIncident": 1,
+                    "timeDifferenceNumericIncident": 1,
+                    "timeDiffRep": 1,
+                    "alarmReportingTimeFull": 1,  # Agrega este campo                    
+                    "timeDiffNumRep": 1
+                }
+            },
+            {"$sort": {"omArrivalTimestamp": 1}}
+        ]
+
+        def format_datetime(dt):
+            if dt:
+                return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+            else:
+                return '-'
+
+        # Ejecutar el pipeline
+        cursor = mongo.db.alarm.aggregate(pipeline)
+
+        # Procesar y formatear los resultados
+        new_alarms = []
+        for alarma in cursor:
+            alarma['_id'] = str(alarma['_id'])
+            alarma['inicioOUM'] = format_datetime(alarma.get('inicioOUM'))
+            alarma['alarmRaisedTime'] = format_datetime(alarma.get('alarmRaisedTime'))
+            alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
+            alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
+            alarma['isMarked'] = True  # O añade una lógica para determinar si está marcada
+
+
+            if not alarma.get('timeResolution'):
+                alarma['timeResolution'] = '-'
+            else:
+                alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
+
+            # Procesar 'origenId'
+            origen_id = alarma.get('origenId', '')
+            if len(origen_id) == 24:
+                alarma['origenId'] = f"FMS {origen_id}"
+            elif len(origen_id) in [10, 13]:
+                alarma['origenId'] = f"FMC {origen_id}"
+            elif len(origen_id) in [8, 9]:
+                alarma['origenId'] = f"ICD {origen_id}"
+            elif origen_id:
+                alarma['origenId'] = f"    {origen_id}"
+            else:
+                alarma['origenId'] = '-'
+
+            # Procesar 'alarmId'
+            alarm_id = alarma.get('alarmId', '')
+            sourceSystemId = alarma.get('sourceSystemId', '')
+            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
+
+            if alarma.get('alarmId') == alarma.get('origenId'):
+                alarma['origenId'] = '-'
+
+            new_alarms.append(alarma)
+
+        logger.info(f"Alarmas encontradas: {len(new_alarms)}")
+        return jsonify({"data": new_alarms}), 200
+
+    except Exception as e:
+        logger.error(f"Error al obtener nuevas alarmas: {str(e)}", exc_info=True)
+        return jsonify({"error": "Ocurrió un error al buscar nuevas alarmas"}), 500
+
+
+
+
+
 
 def convert_object_ids(data):
     for item in data:
         if '_id' in item and isinstance(item['_id'], ObjectId):
             item['_id'] = str(item['_id'])
     return data
+
 
 @app.route('/search_alarm', methods=['GET'])
 def search_alarm():
@@ -712,6 +967,8 @@ def get_alarmas():
         alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))        
         alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
         alarma['_id'] = convert_object_ids(alarma.get('_id'))
+        # Agregar un indicador si el campo está marcado
+        alarma['isMarked'] = False  # O añade una lógica para determinar si está marcada
 
         #logger.info(f"alarmReportingTimeFull {alarma['alarmReportingTimeFull']}")
 

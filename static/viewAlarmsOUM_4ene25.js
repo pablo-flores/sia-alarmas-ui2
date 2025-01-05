@@ -251,7 +251,6 @@ let existingAlarmIds = [];
 let highlightAlarmIds = [];
 let initialLoad = true;  // <-- nueva bandera
 let TIME_RELOAD = 5000
-let TIME_VER_CELDA = 30000
 
 // Objeto donde guardamos el estado previo de cada fila, 
 // usando como clave el _id de la alarma.
@@ -264,14 +263,6 @@ let updatedCells = {};
 // Índices de columnas que NO se deben resaltar (por ejemplo, la 10).
 // Nota: la columna 10 en DataTables es la que corresponde a timeDiffRep en tu ejemplo.
 const excludedColumnIndexes = [10];
-
-// Objeto donde guardaremos qué celdas deben seguir en color
-// highlightState[ alarmId ] = { 
-//    colIndex1: expirationTime, 
-//    colIndex2: expirationTime, ...
-// }
-let highlightState = {};
-
 
 /**
  * Mapeo de nombres de campos de la alarma => índice de columna en DataTables.
@@ -334,9 +325,9 @@ $(document).ready(function() {
                     return [];
                 }
                 
-           
+            
                 // -----------------------------------------------------------------
-                // detectar cuáles son los IDs que aún no tenemos almacenados
+                // NUEVO: detectar cuáles son los IDs que aún no tenemos almacenados
                 // -----------------------------------------------------------------
                 const newData = json.data;
                 
@@ -777,7 +768,6 @@ $(document).ready(function() {
 
             // Llamamos al API de DataTables
             const api = this.api();
-            const now = Date.now();
 
 
             // -----------------------------------------------------------------
@@ -806,7 +796,6 @@ $(document).ready(function() {
                     // Para cada campo modificado, buscar la columna y añadir la clase
                     updatedCells[alarmId].forEach(campo => {
                         const colIndex = fieldToColumnIndex[campo];
-
                         // Evitar problemas si el colIndex no existe
                         if (colIndex !== undefined) {
                             // Obtener la celda
@@ -825,15 +814,7 @@ $(document).ready(function() {
                                     setTimeout(() => {
                                         $(cellNode).removeClass('fade-out');
                                     }, 3000);
-                                }, TIME_VER_CELDA);
-
-                                // TAMBIÉN guardarlo en highlightState:
-                                if (!highlightState[alarmId]) {
-                                    highlightState[alarmId] = {};
-                                }
-                                // 30s de vigencia, ajusta a tu gusto
-                                highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA;
-
+                                }, 30000);
                             }
                         }
                     });
@@ -847,29 +828,6 @@ $(document).ready(function() {
 
             highlightAlarmIds = [];
 
-
-            // 2) Re-aplicar resaltado de celdas según highlightState
-            api.rows().every(function() {
-                const rowData = this.data();
-                const rowNode = this.node();
-                const alarmId = rowData._id;
-
-                // Si no hay info en highlightState[alarmId], nada que hacer
-                if (!highlightState[alarmId]) return;
-
-                // Iterar sobre las columnas registradas
-                for (let colIndex in highlightState[alarmId]) {
-                    // ¿Sigue vigente el resaltado?
-                    if (highlightState[alarmId][colIndex] > now) {
-                        // Obtener la celda de DataTables
-                        const cellNode = api.cell(rowNode, colIndex).node();
-                        $(cellNode).addClass('updated-cell');
-                    }
-                }
-            });
-
-            // 3) Limpieza de caducados
-            cleanupHighlightState();
 
 
             // Re-inicializar tooltips después de cada renderizado
@@ -1051,24 +1009,7 @@ $(document).ready(function() {
         }
     }
 
-    // =============================================
-    // FUNCIONES AUXILIARES GLOBALES
-    // =============================================
-    function cleanupHighlightState() {
-        const now = Date.now();
-        for (let alarmId in highlightState) {
-            for (let colIndex in highlightState[alarmId]) {
-                if (highlightState[alarmId][colIndex] < now) {
-                    // Ya caducó
-                    delete highlightState[alarmId][colIndex];
-                }
-            }
-            if (Object.keys(highlightState[alarmId]).length === 0) {
-                delete highlightState[alarmId];
-            }
-        }
-    }
-
+  
 
     /*******************************************************************************/
     // Definir los índices de las columnas a excluir del resaltado
@@ -1126,7 +1067,7 @@ $(document).ready(function() {
             const updatedData = result.data;
 
             // Función auxiliar para actualizar una celda y aplicar la clase de resaltado si cambia
-            function updateCellIfChanged(rowIndex, colIndex, newData, alarmId) {
+            function updateCellIfChanged(rowIndex, colIndex, newData) {
                 // Obtener el dato actual de la celda
                 const cell = table.cell(rowIndex, colIndex);
                 const currentData = cell.data();
@@ -1153,19 +1094,13 @@ $(document).ready(function() {
                             
                             $(cellNode).addClass('updated-cell');
 
-                            // 2. Guardar en highlightState
-                            if (!highlightState[alarmId]) {
-                                highlightState[alarmId] = {};
-                            }
-                            highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA; // la celda se verá resaltada hasta dentro de 30s     
-                            console.log('highlightState:' + highlightState);                     
 
                             // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
                             setTimeout(() => {  $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                 // Remover la clase 'fade-out' después de la transición
                                 setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
                                 setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
-                            }, TIME_VER_CELDA); // Tiempo durante el cual la celda permanece resaltada
+                            }, 30000); // Tiempo durante el cual la celda permanece resaltada
                         }
                     }
                 }
@@ -1178,20 +1113,20 @@ $(document).ready(function() {
 
                 if (rowIndex !== undefined) {
                     // Actualizar 'origenId' en la columna 1
-                    updateCellIfChanged(rowIndex, 1, alarm.origenId, alarm._id);
+                    updateCellIfChanged(rowIndex, 1, alarm.origenId);
 
                     // Actualizar 'alarmClearedTime' en la columna 9
-                    updateCellIfChanged(rowIndex, 9, alarm.alarmClearedTime, alarm._id);
+                    updateCellIfChanged(rowIndex, 9, alarm.alarmClearedTime);
 
                     // Actualizar 'alarmState' en la columna 2
-                    updateCellIfChanged(rowIndex, 2, alarm.alarmState, alarm._id);
+                    updateCellIfChanged(rowIndex, 2, alarm.alarmState);
 
                     // Actualizar 'timeDiffRep' en la columna 10 (Excluida del resaltado)
-                    updateCellIfChanged(rowIndex, 10, alarm.timeDiffRep, alarm._id);
+                    updateCellIfChanged(rowIndex, 10, alarm.timeDiffRep);
 
                     // Si hay otros campos que desees actualizar, agrégalos aquí
                     // Ejemplo:
-                    // updateCellIfChanged(rowIndex, columnaX, alarm.campoX, alarm._id);
+                    // updateCellIfChanged(rowIndex, columnaX, alarm.campoX);
                 } else {
                     console.warn(`Fila con _id ${alarm._id} no encontrada.`);
                 }

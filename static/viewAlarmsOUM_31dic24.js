@@ -245,68 +245,13 @@ var table;
 var autoRefreshInterval; // Variable para almacenar el ID del intervalo
 var visibleRowsRefreshInterval;
 
-// Array global donde guardaremos todos los IDs que ya se hayan mostrado en la tabla
-let existingAlarmIds = [];
-// Array para almacenar los nuevos IDs detectados durante cada carga
-let highlightAlarmIds = [];
-let initialLoad = true;  // <-- nueva bandera
-let TIME_RELOAD = 5000
-let TIME_VER_CELDA = 30000
-
-// Objeto donde guardamos el estado previo de cada fila, 
-// usando como clave el _id de la alarma.
-let oldDataById = {};
-
-// Objeto donde marcaremos las celdas actualizadas en cada refresh global.
-// La idea es: updatedCells[idAlarma] = [ array de nombres de campos que cambiaron ]
-let updatedCells = {};
-
-// Índices de columnas que NO se deben resaltar (por ejemplo, la 10).
-// Nota: la columna 10 en DataTables es la que corresponde a timeDiffRep en tu ejemplo.
-const excludedColumnIndexes = [10];
-
-// Objeto donde guardaremos qué celdas deben seguir en color
-// highlightState[ alarmId ] = { 
-//    colIndex1: expirationTime, 
-//    colIndex2: expirationTime, ...
-// }
-let highlightState = {};
-
-
-/**
- * Mapeo de nombres de campos de la alarma => índice de columna en DataTables.
- * Ajusta según tus columnas reales:
- */
-const fieldToColumnIndex = {
-  "alarmId": 0,
-  "origenId": 1,
-  "alarmState": 2,
-  "alarmType": 3,
-  "alarmRaisedTime": 4,
-  "alarmReportingTime": 5,
-  "timeDifferenceIncident": 6,
-  "inicioOUM": 7,
-  "timeDifference": 8,
-  "alarmClearedTime": 9,
-  "timeDiffRep": 10,            // Excluida del resaltado
-  "TypeNetworkElement": 11,
-  "networkElementId": 12,
-  "clients": 13,
-  "timeResolution": 14,
-  "plays": 15,
-  "sequence": 16
-};
-
-
-
-
-
 // Inicialización de DataTable con procesamiento del lado del servidor
 $(document).ready(function() {
     $('#loading').show();
     $('#alarmTable').hide();
 
     table = $('#alarmTable').DataTable({
+        //"rowId": 'alarmId',
         "rowId": '_id',
         "serverSide": true,
         "ajax": {
@@ -318,13 +263,9 @@ $(document).ready(function() {
                 alert("Ocurrió un error al cargar los datos de la tabla:\n" + error + "\nRespuesta del servidor:\n" + xhr.responseText);                
             },
             "data": function(d) {
-                // Ajustamos page y limit. “baseLimit + pendingExpansion” es el total
                 d.page = Math.floor(d.start / d.length) + 1;
                 d.limit = d.length;
                 d.search = { "value": d.search.value };
-
-                // NUEVO (expansión): forzamos “limit = baseLimit + pendingExpansion”
-                //d.limit = baseLimit + pendingExpansion;
             },
             "dataSrc": function (json) {
                 //console.log('Datos recibidos desde server:', json.data);
@@ -333,78 +274,7 @@ $(document).ready(function() {
                     alert("Hubo un error en el servidor: " + json.error);
                     return [];
                 }
-                
-           
-                // -----------------------------------------------------------------
-                // detectar cuáles son los IDs que aún no tenemos almacenados
-                // -----------------------------------------------------------------
-                const newData = json.data;
-                
-                // Si es la primera carga, se llenan los existingAlarmIds
-                // pero no se resalta nada:
-                // -------------------------------------
-                // 1) Detectar filas nuevas (ya lo haces)
-                // -------------------------------------
-                if (initialLoad) {
-                    newData.forEach(alarm => {
-                        existingAlarmIds.push(alarm._id);
-                    });
-                    initialLoad = false;
-                } else {
-                    highlightAlarmIds = [];
-                    newData.forEach(alarm => {
-                        if (!existingAlarmIds.includes(alarm._id)) {
-                            highlightAlarmIds.push(alarm._id);
-                        }                       
-                    });
-                    existingAlarmIds = existingAlarmIds.concat(highlightAlarmIds);
-                }
-
-                // ----------------------------------------------------------------------------
-                // 2) Detectar celdas que cambiaron para cada fila, comparando con `oldDataById`
-                // ----------------------------------------------------------------------------
-                updatedCells = {};  // Reiniciamos en cada refresh global
-
-                newData.forEach( alarm => {
-                    const alarmId = alarm._id;
-
-                    // Ver si existe en oldDataById => significa fila conocida
-                    if (oldDataById[alarmId]) {
-                        // Comparar campo por campo:
-                        const oldRow = oldDataById[alarmId];
-                        const newRow = alarm;
-
-                        // Recorremos las keys que te interesan:
-                        Object.keys(fieldToColumnIndex).forEach( campo => {
-                            // Saltar la comparación en la columna 10 (timeDiffRep)
-                            if (fieldToColumnIndex[campo] === 10) {
-                                return; 
-                            }
-                            const oldVal = (oldRow[campo] ?? '').toString().trim();
-                            const newVal = (newRow[campo] ?? '').toString().trim();
-                            if ( oldVal !== newVal ) {
-                                // Si son diferentes, lo marcamos
-                                if (!updatedCells[alarmId]) {
-                                    updatedCells[alarmId] = [];
-                                }
-                                updatedCells[alarmId].push(campo);
-                            }
-                        });
-
-                    } 
-                    
-                    // Guardar la versión nueva de la alarma en oldDataById
-                    oldDataById[alarmId] = alarm;
-                });
-
-                // Retornamos la data para que DataTables pinte las filas
-                return newData;
-
-            },
-            "error": function (xhr, error, thrown) {
-                console.error("Error de DataTables:", error);
-                console.log("Respuesta del servidor:", xhr.responseText); 
-                alert("Ocurrió un error al cargar los datos de la tabla:\n" + error + "\nRespuesta del servidor:\n" + xhr.responseText);                
+                return json.data;
             }
         },
         "columns": [
@@ -774,104 +644,6 @@ $(document).ready(function() {
             "emptyTable": "No hay datos disponibles en la tabla"
         },
         "drawCallback": function() {
-
-            // Llamamos al API de DataTables
-            const api = this.api();
-            const now = Date.now();
-
-
-            // -----------------------------------------------------------------
-            // NUEVO: recorrer todas las filas y resaltar las que tengan ID nuevo
-            // -----------------------------------------------------------------
-            api.rows().every(function(rowIdx) {
-                const rowData = this.data();  // Datos de la fila actual
-                const rowNode = this.node();  // <tr> de la fila en el DOM
-
-                // Si el _id de la fila está dentro de highlightAlarmIds, resaltar
-                if (highlightAlarmIds.includes(rowData._id)) {
-                    $(rowNode).addClass('highlight-new');                   
-                }
-
-
-            });
-
-            // Ahora, también resaltar las celdas que hayan cambiado
-            api.rows().every(function() {
-                const rowData = this.data();
-                const rowNode = this.node();
-                const alarmId = rowData._id;
-
-                // ¿Esta fila tiene campos actualizados?
-                if (updatedCells[alarmId] && updatedCells[alarmId].length > 0) {
-                    // Para cada campo modificado, buscar la columna y añadir la clase
-                    updatedCells[alarmId].forEach(campo => {
-                        const colIndex = fieldToColumnIndex[campo];
-
-                        // Evitar problemas si el colIndex no existe
-                        if (colIndex !== undefined) {
-                            // Obtener la celda
-                            const cellNode = api.cell(rowNode, colIndex).node();
-
-                            // Agregar la clase, siempre y cuando no esté en la lista de exclusión
-                            if (!excludedColumnIndexes.includes(colIndex)) {
-                                $(cellNode).addClass('updated-cell');
-
-                                // Remover de manera escalonada (ejemplo)
-                                setTimeout(() => {
-                                    $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
-                                    setTimeout(() => {
-                                        $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit');
-                                    }, 3000);
-                                    setTimeout(() => {
-                                        $(cellNode).removeClass('fade-out');
-                                    }, 3000);
-                                }, TIME_VER_CELDA);
-
-                                // TAMBIÉN guardarlo en highlightState:
-                                if (!highlightState[alarmId]) {
-                                    highlightState[alarmId] = {};
-                                }
-                                // 30s de vigencia, ajusta a tu gusto
-                                highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA;
-
-                            }
-                        }
-                    });
-                }
-            });
-
-         
-            // Opcional: después de dibujar, podrías vaciar highlightAlarmIds
-            // para evitar que las filas sigan marcadas en reloads inmediatos.
-            // Pero si quieres que permanezcan resaltadas, déjalo comentado.
-
-            highlightAlarmIds = [];
-
-
-            // 2) Re-aplicar resaltado de celdas según highlightState
-            api.rows().every(function() {
-                const rowData = this.data();
-                const rowNode = this.node();
-                const alarmId = rowData._id;
-
-                // Si no hay info en highlightState[alarmId], nada que hacer
-                if (!highlightState[alarmId]) return;
-
-                // Iterar sobre las columnas registradas
-                for (let colIndex in highlightState[alarmId]) {
-                    // ¿Sigue vigente el resaltado?
-                    if (highlightState[alarmId][colIndex] > now) {
-                        // Obtener la celda de DataTables
-                        const cellNode = api.cell(rowNode, colIndex).node();
-                        $(cellNode).addClass('updated-cell');
-                    }
-                }
-            });
-
-            // 3) Limpieza de caducados
-            cleanupHighlightState();
-
-
             // Re-inicializar tooltips después de cada renderizado
             $('#alarmTable tbody').off('mouseenter', '.tooltip-cell').on('mouseenter', '.tooltip-cell', function() {
                 var tooltip = $(this).find('.tooltip-text');
@@ -998,7 +770,7 @@ $(document).ready(function() {
             autoRefreshInterval = setInterval(function() {
                 console.log('Recargando DataTable automáticamente...');
                 table.ajax.reload(null, false); // false para mantener la paginación actual
-            }, TIME_RELOAD); // 10 segundos
+            }, 10000); // 10 segundos
             console.log('Auto-refresh completo iniciado.');
         }
     }
@@ -1017,11 +789,7 @@ $(document).ready(function() {
                 console.log('Actualizando filas visibles...');
                 stopAutoRefresh(); // Asegura que no se solapen
                 refreshVisibleRows();
-            }, TIME_RELOAD); // Intervalo de 10 segundos
-
-            // -- Inicia autoRefresh inmediatamente DESPUÉS de iniciar visibleRows
-            //startAutoRefresh(); console.log('filas visibles + startAutoRefresh');
-
+            }, 10000); // Intervalo de 10 segundos
             console.log('Auto-refresh de filas visibles iniciado.');
         }
     }
@@ -1051,24 +819,37 @@ $(document).ready(function() {
         }
     }
 
-    // =============================================
-    // FUNCIONES AUXILIARES GLOBALES
-    // =============================================
-    function cleanupHighlightState() {
-        const now = Date.now();
-        for (let alarmId in highlightState) {
-            for (let colIndex in highlightState[alarmId]) {
-                if (highlightState[alarmId][colIndex] < now) {
-                    // Ya caducó
-                    delete highlightState[alarmId][colIndex];
-                }
-            }
-            if (Object.keys(highlightState[alarmId]).length === 0) {
-                delete highlightState[alarmId];
-            }
+    // **Eliminar cualquier event listener duplicado fuera de este bloque**
+    // Asegúrate de **eliminar** las siguientes líneas si existen:
+    /*
+    // Evento para el toggle de auto-refresh completo
+    $('#auto-refresh-toggle').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        localStorage.setItem('autoRefreshEnabled', isChecked);
+        if (isChecked) {
+            stopVisibleRowsAutoRefresh(); // Asegura que no se solapen
+            startAutoRefresh();
+            console.log('Auto-refresh completo habilitado.');
+        } else {
+            stopAutoRefresh();
+            console.log('Auto-refresh completo deshabilitado.');
         }
-    }
+    });
 
+    // Evento para el toggle de auto-refresh de filas visibles
+    $('#visible-rows-refresh-toggle').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        localStorage.setItem('visibleRowsAutoRefreshEnabled', isChecked);
+        if (isChecked) {
+            stopAutoRefresh(); // Asegura que no se solapen
+            startVisibleRowsAutoRefresh();
+            console.log('Vista-refresh pantalla habilitado.');
+        } else {
+            stopVisibleRowsAutoRefresh();
+            console.log('Vista-refresh pantalla deshabilitado.');
+        }
+    });
+    */
 
     /*******************************************************************************/
     // Definir los índices de las columnas a excluir del resaltado
@@ -1126,7 +907,7 @@ $(document).ready(function() {
             const updatedData = result.data;
 
             // Función auxiliar para actualizar una celda y aplicar la clase de resaltado si cambia
-            function updateCellIfChanged(rowIndex, colIndex, newData, alarmId) {
+            function updateCellIfChanged(rowIndex, colIndex, newData) {
                 // Obtener el dato actual de la celda
                 const cell = table.cell(rowIndex, colIndex);
                 const currentData = cell.data();
@@ -1153,19 +934,13 @@ $(document).ready(function() {
                             
                             $(cellNode).addClass('updated-cell');
 
-                            // 2. Guardar en highlightState
-                            if (!highlightState[alarmId]) {
-                                highlightState[alarmId] = {};
-                            }
-                            highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA; // la celda se verá resaltada hasta dentro de 30s     
-                            console.log('highlightState:' + highlightState);                     
 
                             // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
                             setTimeout(() => {  $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                 // Remover la clase 'fade-out' después de la transición
                                 setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
                                 setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
-                            }, TIME_VER_CELDA); // Tiempo durante el cual la celda permanece resaltada
+                            }, 30000); // Tiempo durante el cual la celda permanece resaltada
                         }
                     }
                 }
@@ -1178,20 +953,20 @@ $(document).ready(function() {
 
                 if (rowIndex !== undefined) {
                     // Actualizar 'origenId' en la columna 1
-                    updateCellIfChanged(rowIndex, 1, alarm.origenId, alarm._id);
+                    updateCellIfChanged(rowIndex, 1, alarm.origenId);
 
                     // Actualizar 'alarmClearedTime' en la columna 9
-                    updateCellIfChanged(rowIndex, 9, alarm.alarmClearedTime, alarm._id);
+                    updateCellIfChanged(rowIndex, 9, alarm.alarmClearedTime);
 
                     // Actualizar 'alarmState' en la columna 2
-                    updateCellIfChanged(rowIndex, 2, alarm.alarmState, alarm._id);
+                    updateCellIfChanged(rowIndex, 2, alarm.alarmState);
 
                     // Actualizar 'timeDiffRep' en la columna 10 (Excluida del resaltado)
-                    updateCellIfChanged(rowIndex, 10, alarm.timeDiffRep, alarm._id);
+                    updateCellIfChanged(rowIndex, 10, alarm.timeDiffRep);
 
                     // Si hay otros campos que desees actualizar, agrégalos aquí
                     // Ejemplo:
-                    // updateCellIfChanged(rowIndex, columnaX, alarm.campoX, alarm._id);
+                    // updateCellIfChanged(rowIndex, columnaX, alarm.campoX);
                 } else {
                     console.warn(`Fila con _id ${alarm._id} no encontrada.`);
                 }

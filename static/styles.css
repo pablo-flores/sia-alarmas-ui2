@@ -833,11 +833,12 @@ hr {
     display: inline-block;
     width: 8px;
     height: 8px;
-    border: 2px solid rgb(255, 255, 255);
-    border-top-color: #1e6797; /* Color del spinner */
+    border: 1px solid rgb(255, 255, 255);
+    border-color: rgb(255, 255, 255); /* Color de los bordes restantes */    
+    border-top-color: #000000; /* Color del spinner */
     border-radius: 50%;
-    animation: spin 2s linear infinite;
-    margin-left: 2px; /* Espacio entre el texto y el spinner */
+    animation: spin 10s linear infinite;
+    margin-left: 6px; /* Espacio entre el texto y el spinner */
     vertical-align: middle; /* Alineación vertical con el texto */
 }
 
@@ -936,24 +937,32 @@ input:checked + .slider:before {
 /***********************************************************/
 
 /* Clase para resaltar la celda actualizada */
-/* Clase para resaltar la celda actualizada */
 .updated-cell {
-    background-color: orange; /* Rojo claro para resaltar */
-    transition: background-color 3s ease; /* Transición suave de 3 segundos */
+    background-color: rgb(224, 138, 25); /* Amarillo claro */
+    transition: background-color 1s ease-in-out;
+}
+
+@keyframes highlight-fade {
+    from {
+        background-color: #ffeb3b;
+    }
+    to {
+        background-color: transparent;
+    }
 }
 
 
 /* Clase para resaltar la celda actualizada */
 .updated-cell-medio {
-    background-color: yellow; /* Rojo claro para resaltar */
-    transition: background-color 3s ease; /* Transición suave de 3 segundos */
+    background-color: rgb(170, 125, 212); /* Rojo claro para resaltar */
+    transition: background-color 2s ease; /* Transición suave de 3 segundos */
 }
 
 
 /* Clase para resaltar la celda actualizada */
 .updated-cell-exit {
-    background-color: whitesmoke; /* Rojo claro para resaltar */
-    transition: background-color 3s ease; /* Transición suave de 3 segundos */
+    background-color: rgb(255, 255, 255); /* Rojo claro para resaltar */
+    transition: background-color 1s ease; /* Transición suave de 3 segundos */
     font-weight: bold;  
 }
 
@@ -990,5 +999,58 @@ input:checked + .slider:before {
     margin-right: 10px;
     font-weight: bold;
 }
+
+/***********************************************************/
+
+/* 
+   Clase que se le asignará a la fila nueva, dispara la animación "highlightFade"
+   de 9s de duración. "forwards" mantiene el último estado de la animación. 
+*/
+.highlight-new {
+    animation: highlightFade 5s forwards;
+  }
+  
+  /* Keyframes de la animación */
+  @keyframes highlightFade {
+    /* En 0%, el color de fondo es transparente (comienza a "aparecer") */
+    0% {
+      background-color: rgba(212, 237, 218, 0);
+    }
+    /* En 10%, el color ya es verde suave */
+    10% {
+      background-color: #9fa0d3;
+    }
+    /* En 25%, el color ya es verde suave */
+    25% {
+        background-color: #9a9bdd;
+      }    
+    /* En 50%, el color ya es verde suave */
+    50% {
+        background-color: #7c7deb;
+        color: white;
+        font-weight: bold;
+      }    
+    /* Se mantiene verde suave hasta el 75% del tiempo */
+    75% {
+        background-color: #9091c9;
+        color: white;
+      }
+    /* Se mantiene verde suave hasta el 80% del tiempo */
+    80% {
+      background-color: #9b9cc0;
+      color: white;
+    }
+    /* Del 80% al 100% se va difuminando */
+    100% {
+      background-color: rgba(212, 237, 218, 0);
+    }
+  }
+  
+  /* Cuando se aplique esta clase, la fila irá perdiendo opacidad en 3s */
+.fade-out {
+    transition: opacity 3s ease;
+    opacity: 0; 
+  }
+  
 
 /***********************************************************/

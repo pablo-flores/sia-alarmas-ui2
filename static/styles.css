@@ -834,17 +834,20 @@ hr {
     width: 8px;
     height: 8px;
     border: 1px solid rgb(255, 255, 255);
-    border-color: rgb(255, 255, 255); /* Color de los bordes restantes */    
-    border-top-color: #000000; /* Color del spinner */
+    border-color: black;/*rgb(255, 255, 255); /* Color de los bordes restantes */    
+    border-top-color: #FF3D00;/*#000000; /* Color del spinner */
     border-radius: 50%;
-    animation: spin 10s linear infinite;
+    animation: spin 5s linear infinite;
     margin-left: 6px; /* Espacio entre el texto y el spinner */
     vertical-align: middle; /* Alineación vertical con el texto */
 }
 
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+
 
 /***********************************************************/
 
@@ -938,13 +941,14 @@ input:checked + .slider:before {
 
 /* Clase para resaltar la celda actualizada */
 .updated-cell {
-    background-color: rgb(224, 138, 25); /* Amarillo claro */
-    transition: background-color 1s ease-in-out;
+    background-color: #cccc008c; /* Amarillo claro */
+    transition: background-color 3s ease-in;
+    padding: 50%;
 }
 
 @keyframes highlight-fade {
     from {
-        background-color: #ffeb3b;
+        background-color: #CCCC00;
     }
     to {
         background-color: transparent;
@@ -954,23 +958,26 @@ input:checked + .slider:before {
 
 /* Clase para resaltar la celda actualizada */
 .updated-cell-medio {
-    background-color: rgb(170, 125, 212); /* Rojo claro para resaltar */
-    transition: background-color 2s ease; /* Transición suave de 3 segundos */
+    background-color: #FFFF00; /* Rojo claro para resaltar */
+    transition: background-color 3s ease-out; /* Transición suave de 3 segundos */
+    padding: 50%;
 }
 
 
 /* Clase para resaltar la celda actualizada */
 .updated-cell-exit {
-    background-color: rgb(255, 255, 255); /* Rojo claro para resaltar */
-    transition: background-color 1s ease; /* Transición suave de 3 segundos */
+    background-color: #E6E6E6; /* Rojo claro para resaltar */
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */
     font-weight: bold;  
+    padding: 50%;
 }
 
 
 /* Estado final después de la transición */
 .updated-cell.fade-out {
     background-color: transparent; /* Vuelve al fondo original */
-    /*transition: background-color 3s ease; /* Transición suave de 3 segundos */      
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */  
+    padding: 50%;    
 }
 
 /***********************************************************/
@@ -1015,29 +1022,32 @@ input:checked + .slider:before {
     /* En 0%, el color de fondo es transparente (comienza a "aparecer") */
     0% {
       background-color: rgba(212, 237, 218, 0);
+      color: white;
     }
     /* En 10%, el color ya es verde suave */
     10% {
-      background-color: #9fa0d3;
+      background-color: #aabbff;
+      color: white;
     }
     /* En 25%, el color ya es verde suave */
     25% {
-        background-color: #9a9bdd;
+        background-color: #CC99FF;
+        color: white;
       }    
     /* En 50%, el color ya es verde suave */
     50% {
-        background-color: #7c7deb;
+        background-color: #9933FF;
         color: white;
-        font-weight: bold;
+        /*font-weight: bold;*/
       }    
     /* Se mantiene verde suave hasta el 75% del tiempo */
     75% {
-        background-color: #9091c9;
+        background-color: #CC99FF;
         color: white;
       }
     /* Se mantiene verde suave hasta el 80% del tiempo */
     80% {
-      background-color: #9b9cc0;
+      background-color: #aabbff;
       color: white;
     }
     /* Del 80% al 100% se va difuminando */
@@ -1054,3 +1064,167 @@ input:checked + .slider:before {
   
 
 /***********************************************************/
+/*  cssloaders.github.io  */
+/* OJOS */
+.loader {
+    display: none; /* por defecto escondido */    
+    position: relative;
+    width: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;     /* centrar en horizontal */
+  }
+
+  .loader::after , .loader::before  {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #FFF;
+    background-image:  radial-gradient(circle 4px, #0d161b 100%, transparent 0);
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    animation: eyeMove 20s infinite , blink 20s infinite;
+  }
+  @keyframes eyeMove {
+    0%  , 10% {     background-position: 0px 0px}
+    13%  , 40% {     background-position: -4px 0px}
+    43%  , 70% {     background-position: 4px 0px}
+    73%  , 90% {     background-position: 0px 4px}
+    93%  , 100% {     background-position: 0px 0px}
+  }
+  @keyframes blink {
+    0%  , 10% , 12% , 20%, 22%, 40%, 42% , 60%, 62%,  70%, 72% , 90%, 92%, 98% , 100%
+    { height: 12px}
+    11% , 21% ,41% , 61% , 71% , 91% , 99%
+    { height: 5px}
+  }
+
+  .progress-loader-wrapper {
+    /* Si solo quieres centrar horizontalmente con flex */
+    display: flex;
+    flex-direction: column;  /* apilar uno debajo del otro */
+    align-items: center;     /* centrar en horizontal */
+    /*margin-top: 0.5em;       /* espacio si quieres separarlo un poco */
+}
+
+/* Opcionalmente, si usabas 'direction: rtl' para la barra, 
+   retíralo (o mantenlo según tu lógica). 
+   Lo fundamental es que <span class="loader"> esté dentro 
+   del mismo contenedor y se aplique "align-items: center". */
+
+
+/***********************************************************/  
+
+/*  cssloaders.github.io  */
+/* RELOJ  */
+.loaderTime {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    position: relative;
+    background-color: #FFF;
+    background: radial-gradient(ellipse at center, #FF3D00 0%, #FF3D00 14%, #7c7a7a 15%, #7c7a7a 100%);
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+  }
+  .loaderTime::after,
+  .loaderTime::before {
+    content: '';  
+    position: absolute;
+    height: 8px;
+    width: 2px;
+    background: #FF3D00;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) rotate(0deg);
+    transform-origin: 25% 0;
+    box-sizing: border-box;
+    animation: rotation 20s linear infinite;
+  }
+  .loaderTime::before {
+    height: 11px;
+    width: 1px;
+    transform: translateX(-50%) rotate(0deg);
+    animation-duration: 2s;
+  } 
+  @keyframes rotation {
+    0%    { transform: rotate(0deg)}
+    100%  { transform: rotate(360deg)}
+  } 
+
+/***********************************************************/    
+
+.vertical.carousel .carousel-control {
+    bottom: auto;
+    width: 100%;
+    height: 15%;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0, rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0)));
+    background: -moz-linear-gradient(top, rgba(0,0,0,0.5) 0, rgba(0,0,0,0) 100%);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0) 100%);
+}
+.vertical.carousel .carousel-control.right {
+  top: auto;
+  bottom: 0;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.5)));
+  background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.5) 100%);
+}
+.vertical.carousel .carousel-control .glyphicon {
+  -webkit-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
+.vertical.carousel .carousel-indicators {
+  bottom: auto;
+  top: 50%;
+  left: auto;
+  right: 10px;
+  width: 14px;
+  margin: 0;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+.vertical.carousel .carousel-inner > .item {
+  left: 0;
+  top: 0;
+}
+.vertical.carousel .carousel-inner > .item > img {
+  width: 100%;
+}
+.vertical.carousel .carousel-inner > .item.next,
+.vertical.carousel .carousel-inner > .item.active.right {
+  -webkit-transform: translate3d(0, 100%, 0);
+          transform: translate3d(0, 100%, 0);
+  top: 0;
+}
+.vertical.carousel .carousel-inner > .item.prev,
+.vertical.carousel .carousel-inner > .item.active.left {
+  -webkit-transform: translate3d(0, -100%, 0);
+          transform: translate3d(0, -100%, 0);
+  top: 0;
+}
+.vertical.carousel .carousel-inner > .item.next.left,
+.vertical.carousel .carousel-inner > .item.prev.right,
+.vertical.carousel .carousel-inner > .item.active {
+  -webkit-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+  top: 0;
+}
+.vertical.carousel .carousel-inner > .active,
+.vertical.carousel .carousel-inner > .next.left,
+.vertical.carousel .carousel-inner .prev.right {
+  top: 0;
+}
+.vertical.carousel .carousel-inner > .next,
+.vertical.carousel .carousel-inner > .active.right {
+  top: 100%;
+  left: 0;
+}
+.vertical.carousel .carousel-inner > .prev,
+.vertical.carousel .carousel-inner > .active.left {
+  top: -100%;
+  left: 0;
+}
+
+  /***********************************************************/    

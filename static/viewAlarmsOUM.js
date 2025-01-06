@@ -252,6 +252,7 @@ let highlightAlarmIds = [];
 let initialLoad = true;  // <-- nueva bandera
 let TIME_RELOAD = 5000
 let TIME_VER_CELDA = 30000
+let TIME_INTER_CELDA = 3000
 
 // Objeto donde guardamos el estado previo de cada fila, 
 // usando como clave el _id de la alarma.
@@ -821,10 +822,10 @@ $(document).ready(function() {
                                     $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                     setTimeout(() => {
                                         $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit');
-                                    }, 3000);
+                                    }, TIME_INTER_CELDA);
                                     setTimeout(() => {
                                         $(cellNode).removeClass('fade-out');
-                                    }, 3000);
+                                    }, TIME_INTER_CELDA);
                                 }, TIME_VER_CELDA);
 
                                 // TAMBIÉN guardarlo en highlightState:
@@ -1157,14 +1158,14 @@ $(document).ready(function() {
                             if (!highlightState[alarmId]) {
                                 highlightState[alarmId] = {};
                             }
-                            highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA; // la celda se verá resaltada hasta dentro de 30s     
+                            highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA + 10; // la celda se verá resaltada hasta dentro de 30s     
                             console.log('highlightState:' + highlightState);                     
 
                             // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
                             setTimeout(() => {  $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                 // Remover la clase 'fade-out' después de la transición
-                                setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
-                                setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, 3000); // Asegúrate de que este tiempo coincida con tu transición CSS
+                                setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, TIME_INTER_CELDA); // Asegúrate de que este tiempo coincida con tu transición CSS
+                                setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, TIME_INTER_CELDA); // Asegúrate de que este tiempo coincida con tu transición CSS
                             }, TIME_VER_CELDA); // Tiempo durante el cual la celda permanece resaltada
                         }
                     }
@@ -1525,6 +1526,7 @@ function updateLocalTime() {
 function updateProgressBar() {
     const now = new Date();
     const localTimeElement = document.getElementById('local-time').textContent;
+    const loaderElement = document.querySelector('.loader');
 
     //console.log('Current time:', now);
     //console.log('Local time element:', localTimeElement);
@@ -1555,13 +1557,21 @@ function updateProgressBar() {
     progressBar.style.width = percentage + '%';
 
     const refreshButton = document.querySelector('.btn-modern');
+
     if (percentage >= 100) {
         refreshButton.style.backgroundColor = '#fe8d59';
         document.getElementById('progress-container').style.display = 'none';
+        // Mostrar loader cuando la barra llegue al 100%
+        loaderElement.style.display = 'inline-block';
     } else {
         refreshButton.style.backgroundColor = '#5290d3';
         document.getElementById('progress-container').style.display = 'block';
+        // Ocultar loader cuando la barra esté por debajo del 100%
+        loaderElement.style.display = 'none';
     }
+
+   
+
 }
 
 // Evento para el botón de refresh

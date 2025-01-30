@@ -49,7 +49,7 @@
                 Service Impact Analysis                
                 <!-- Botón de expansión/contracción -->
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
-                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.3.0 - EN PRUEBAS</div>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.2.9.1 - EN PRUEBAS</div>   
 
                 <div class="progress-loader-wrapper">
                     <span class="loader"></span>
@@ -114,23 +114,11 @@
                 <div class="grid-itemRight">T-to Outage:</div>
                 <div class="grid-item">Diferencia minutos entre T.Inicio Outage y T.Inicio Detección.</div>                
 
-                <div class="grid-itemRight">T.Crea Incident:</div>
-                <div class="grid-item">Fecha y hora que Ticketera indica se creo el incidente.</div>
-
-                <div class="grid-itemRight">T-to Incident:</div>
-                <div class="grid-item">Diferencia minutos entre T.Crea Incident y T.Inicio Detección.</div>  
-                
-                <div class="grid-itemRight">T.Crea OT:</div>
-                <div class="grid-item">Fecha y hora que se creo la Orden de Trabajo.</div>
-
-                <div class="grid-itemRight">T-to OT:</div>
-                <div class="grid-item">Diferencia minutos entre T.Crea Incident y T.Crea OT.</div>                  
-
                 <div class="grid-itemRight">T.Fin Repar:</div>     
                 <div class="grid-item">Fecha y hora que Fault desafectó la alarma, muestra los últimos {{ days_configMap }} días.</div>
 
                 <div class="grid-itemRight">T-to Repar:</div>
-                <div class="grid-item">Diferencia actualizada en cada Refresh, de minutos entre T.Raise Alarma y T.Fin Repar<span class="loaderTime"></span></div>                        
+                <div class="grid-item">Diferencia actualizada en cada Refresh, de minutos entre T.Raise Alarma y T.Fin Repar<span class="spinner"></span></div>                        
                                 
                 <div class="grid-itemRight">Tipo Elemento Red:</div>
                 <div class="grid-item">Tipo de elemento de red asociado (RFS: Resource Facing Service, conjunto de recursos asociados a un nombre, para facilitar su gestión).</div>
@@ -156,25 +144,22 @@
             <table id="alarmTable" style="display:none; margin: 0 3px; width: calc(100% - 6px);">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Primer Id Outage<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Id Incident<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Estado<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Incident<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Detección</th> <!-- 1er deteccion Fault  -->
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Raise Alarma</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to Detect</th> <!-- fin o creacion alarma deteccion Fault  -->                                                                                         
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Outage</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to Outage</th>  <!-- llegada al outage  -->
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Crea Incident</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to Incident</th>  
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Crea OT</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to OT</th>  
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Repar</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to Repar<span class="loaderTime"></span></th>  <!-- Fin del outage  -->                                         
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elem.Red<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red<sup style='color: red;'>*</sup></th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>
-                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">TER</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Primer Id Outage<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Incidente<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Estado<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Incidente<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Detección</th> <!-- 1er deteccion Fault  -->
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Raise Alarma</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Detect</th> <!-- fin o creacion alarma deteccion Fault  -->                                                                                         
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Inicio Outage</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Outage</th>  <!-- llegada al outage  -->                 
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T.Fin Repar</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">T-to Repar<span class="loaderTime"></span></th>  <!-- Fin del outage  -->                                         
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Tipo Elemento Red<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">Id Elemento Red<sup style='color: red;'>*</sup></th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">#Cli</th>
+                        <th style="font-size: 0.8vw; white-space: wrap; word-break: normal; text-align: center;">TER</th>
+                        <th style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: center;">T-to R</th>                        
                     </tr>       
                 </thead>
                         

@@ -1,0 +1,40 @@
+{
+    "alarmId": "67884e1f2402c40712bef67c",
+    "assets": [
+        {
+            "affectPlays": [
+                {
+                    "play": "VOZ_RESIDENCIAL"
+                },
+                {
+                    "play": "INTERNET_RESIDENCIAL"
+                },
+                {
+                    "play": "FLOW"
+                }
+            ],
+            "alarmDetails": "USCER_EXHI",
+            "alarmRaisedTime": "2025-01-15T21:07:43",
+            "alarmReportingTime": "2025-01-15T21:17:07",
+            "alarmState": "RAISED",
+            "alarmType": "DEGRADACION",
+            "alarmedObjectType": "PUERTO NODO",
+            "networkElementId": "AZU006A",
+            "perceivedSeverity": "Media",
+            "reopened": false,
+            "specificProblem": "USCER_EXHI",
+            "timeResolution": 8
+        }
+    ],
+    "createAt": "2025-01-15T21:17:54",
+    "isRootCause": true,
+    "origenId": "22148955",
+    "sourceSystemId": "ICD"
+},
+"offsetKafka": 103880,
+"origenId": "22148955",
+"receiverSend": true,
+"seEnviaAlReceiver": true,
+"sendReceiverTime": "Thu, 16 Jan 2025 00:17:54 GMT",
+"sourceSystemId": "ICD"
+}

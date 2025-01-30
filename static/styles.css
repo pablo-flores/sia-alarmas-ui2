@@ -131,7 +131,7 @@ form {
 body, html {
     margin: 0;
     padding: 0;
-    overflow-x: hidden; /* Opcional: Oculta el desplazamiento horizontal */
+    /*overflow-x: hidden; /* Opcional: Oculta el desplazamiento horizontal */
 }
 
 
@@ -335,11 +335,11 @@ input[type="checkbox"]:checked+#expandableDiv {
     left: 70%;
     transform: translateX(-50%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.6s ease;
     white-space: nowrap;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.9);
     font-size: 12px; /* Tamaño de letra más pequeño */
-    left: 30%; /* Mover el tooltip más hacia la ... */
+    left: 5%; /* Mover el tooltip más hacia la ... */
     transform: translateX(0%); /* Ajustar la posición horizontal */    
     border: 1px solid #d32222; /* Borde opcional para mayor definición */ 
 }
@@ -350,7 +350,7 @@ input[type="checkbox"]:checked+#expandableDiv {
     content: "";
     position: absolute;
     top: 100%; 
-    left: 30%;
+    left: 10%;
     margin-left: -15px;
     border-width: 15px;
     border-style: solid;
@@ -365,8 +365,8 @@ input[type="checkbox"]:checked+#expandableDiv {
 }
 
 .tooltip-table th, .tooltip-table td {
-    border: 1px solid #302b2b;
-    padding: 5px;
+    border: 1px solid #708fb3;
+    padding: 1px;
     text-align: left;
     background-color: #333; /* Fondo gris oscuro */
     color: #fff; /* Texto blanco */
@@ -940,45 +940,114 @@ input:checked + .slider:before {
 /***********************************************************/
 
 /* Clase para resaltar la celda actualizada */
-.updated-cell {
-    background-color: #cccc008c; /* Amarillo claro */
+.OLDupdated-cell {
+    background-color: #dbb7ff; /* Amarillo claro */
     transition: background-color 3s ease-in;
-    padding: 50%;
+    /*box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.123);*/
+    border-radius: 5px;
+    border: 1px dashed;
 }
-
+/*
 @keyframes highlight-fade {
     from {
-        background-color: #CCCC00;
+        background-color: #b5d5f0;
     }
     to {
         background-color: transparent;
     }
 }
-
+*/
 
 /* Clase para resaltar la celda actualizada */
-.updated-cell-medio {
-    background-color: #FFFF00; /* Rojo claro para resaltar */
+.OLDupdated-cell-medio {
+    background-color: #fcc9c9; /* Rojo claro para resaltar */
     transition: background-color 3s ease-out; /* Transición suave de 3 segundos */
-    padding: 50%;
+    /*box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.123);*/
+    border-radius: 5px;
+    border: 1px dashed;
 }
 
 
 /* Clase para resaltar la celda actualizada */
-.updated-cell-exit {
-    background-color: #E6E6E6; /* Rojo claro para resaltar */
+.OLDupdated-cell-exit {
+    background-color: #fcc9c9; /* para resaltar */
     transition: background-color 3s ease; /* Transición suave de 3 segundos */
     font-weight: bold;  
-    padding: 50%;
+    /*box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.123);*/
+    border-radius: 5px;
+    border: 1px dashed;
 }
 
 
 /* Estado final después de la transición */
-.updated-cell.fade-out {
+.OLDupdated-cell.fade-out {
     background-color: transparent; /* Vuelve al fondo original */
-    transition: background-color 3s ease; /* Transición suave de 3 segundos */  
-    padding: 50%;    
+    transition: background-color 3s ease; /* Transición suave de 3 segundos */ 
+    font-weight: bold; 
+    /*box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.123);*/
+    border-radius: 5px;
+    border: 1px dashed;
 }
+
+
+/*.updated-cell {
+/*    /* Quita o pon un color semitransparente si quieres un tinte sobre el fondo */
+/*    background-color: transparent; 
+/*    /* Deja que la tabla muestre su borde */
+/*    border: 1px solid rgb(255, 255, 0);      /* O simplemente no lo sobreescribas */
+/*    border-radius: 25px;
+/*    padding: 4px 8px;
+/*    overflow: hidden;
+/*    transition: background-color 3s ease-in;
+/*    position: relative;
+/*    /* "Rellena" la celda con amarillo claro sin tapar la línea negra */
+/*    box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.123);
+/*    white-space: nowrap;
+/*    align-items: center;         /* Centra verticalmente */
+/*    justify-content: center;     /* Centra horizontalmente */    
+/*}
+/*
+/*.updated-cell-medio {
+/*    background-color: transparent;
+/*    border: 1px solid rgb(255, 255, 0);      /* O simplemente no lo sobreescribas */
+/*    border-radius: 25px;
+/*    overflow: hidden;
+/*    transition: background-color 3s ease-out;
+/*    position: relative;
+/*    box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.50);
+/*    white-space: nowrap;
+/*    align-items: center;         /* Centra verticalmente */
+/*    justify-content: center;     /* Centra horizontalmente */
+/*}
+/*
+/*.updated-cell-exit {
+/*    background-color: transparent;
+/*    border: 1px solid rgb(255, 255, 0);      /* O simplemente no lo sobreescribas */
+/*    border-radius: 25px;
+/*    overflow: hidden;
+/*    transition: background-color 3s ease;
+/*    position: relative;
+/*    box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.20);
+/*    font-weight: bold;
+/*    white-space: nowrap;
+/*    align-items: center;         /* Centra verticalmente */
+/*    justify-content: center;     /* Centra horizontalmente */
+/*}
+/*
+/*.updated-cell.fade-out {
+/*    background-color: transparent;
+/*    border: 1px solid rgb(255, 255, 0);      /* O simplemente no lo sobreescribas */
+/*    border-radius: 25px;
+/*    overflow: hidden;
+/*    transition: background-color 3s ease;
+/*    position: relative;
+/*    box-shadow: inset 0 0 0 9999px rgba(3, 3, 3, 0.10);
+/*    white-space: nowrap;
+/*    align-items: center;         /* Centra verticalmente */
+/*    justify-content: center;     /* Centra horizontalmente */
+/*}
+
+
 
 /***********************************************************/
 
@@ -1013,10 +1082,72 @@ input:checked + .slider:before {
    Clase que se le asignará a la fila nueva, dispara la animación "highlightFade"
    de 9s de duración. "forwards" mantiene el último estado de la animación. 
 */
+
+  
+.updated-cell {
+    animation: updated-cell-highlightFade 5s forwards;
+}  
+.updated-cell.fade-out {
+    transition: opacity 5s ease;
+    opacity: 0; 
+    font-weight: bold;
+    font-style: bold;
+  }  
+
+  /* Keyframes de la animación */
+  @keyframes updated-cell-highlightFade {
+    /* En 0%, el color de fondo es transparente (comienza a "aparecer") */
+    0% {
+      background-color: rgba(212, 237, 218, 0);
+      color: white;
+      border-radius: 5px;
+      border: 1px dashed;
+    }
+    /* En 10%, el color ya es verde suave */
+    10% {
+      background-color: #aabbff;
+      color: white;
+      border-radius: 5px;
+      border: 1px dashed;
+    }
+    /* En 25%, el color ya es verde suave */
+    25% {
+        background-color: #CC99FF;
+        color: white;
+        border-radius: 5px;
+        border: 1px dashed;
+      }    
+    /* En 50%, el color ya es verde suave */
+    50% {
+        background-color: #a952ff;
+        color: white;
+        border-radius: 5px;
+        border: 1px dashed;
+      }    
+    /* Se mantiene verde suave hasta el 75% del tiempo */
+    75% {
+        background-color: #CC99FF;
+        color: white;
+        border-radius: 5px;
+        border: 1px dashed;        
+      }
+    /* Se mantiene verde suave hasta el 80% del tiempo */
+    80% {
+      background-color: #aabbff;
+      color: white;
+      border-radius: 5px;
+      border: 1px dashed;      
+    }
+    /* Del 80% al 100% se va difuminando */
+    100% {
+      background-color: rgba(212, 237, 218, 0);
+    }
+  }
+
+
 .highlight-new {
     animation: highlightFade 5s forwards;
   }
-  
   /* Keyframes de la animación */
   @keyframes highlightFade {
     /* En 0%, el color de fondo es transparente (comienza a "aparecer") */
@@ -1057,7 +1188,7 @@ input:checked + .slider:before {
   }
   
   /* Cuando se aplique esta clase, la fila irá perdiendo opacidad en 3s */
-.fade-out {
+.highlight-new.fade-out {
     transition: opacity 3s ease;
     opacity: 0; 
   }
@@ -1084,7 +1215,7 @@ input:checked + .slider:before {
     background-image:  radial-gradient(circle 4px, #0d161b 100%, transparent 0);
     background-repeat: no-repeat;
     border-radius: 50%;
-    animation: eyeMove 20s infinite , blink 20s infinite;
+    animation: eyeMove 10s infinite , blink 10s infinite;
   }
   @keyframes eyeMove {
     0%  , 10% {     background-position: 0px 0px}
@@ -1094,7 +1225,7 @@ input:checked + .slider:before {
     93%  , 100% {     background-position: 0px 0px}
   }
   @keyframes blink {
-    0%  , 10% , 12% , 20%, 22%, 40%, 42% , 60%, 62%,  70%, 72% , 90%, 92%, 98% , 100%
+    0%  , 10% , 12% , 20%, 22%, 40%, 42% , 60%, 62%,  70%, 72% , 90%, 92%, 98%, 100%
     { height: 12px}
     11% , 21% ,41% , 61% , 71% , 91% , 99%
     { height: 5px}
@@ -1156,75 +1287,5 @@ input:checked + .slider:before {
 
 /***********************************************************/    
 
-.vertical.carousel .carousel-control {
-    bottom: auto;
-    width: 100%;
-    height: 15%;
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0, rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0)));
-    background: -moz-linear-gradient(top, rgba(0,0,0,0.5) 0, rgba(0,0,0,0) 100%);
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0) 100%);
-}
-.vertical.carousel .carousel-control.right {
-  top: auto;
-  bottom: 0;
-  background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.5)));
-  background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.5) 100%);
-}
-.vertical.carousel .carousel-control .glyphicon {
-  -webkit-transform: rotate(90deg);
-          transform: rotate(90deg);
-}
-.vertical.carousel .carousel-indicators {
-  bottom: auto;
-  top: 50%;
-  left: auto;
-  right: 10px;
-  width: 14px;
-  margin: 0;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
-}
-.vertical.carousel .carousel-inner > .item {
-  left: 0;
-  top: 0;
-}
-.vertical.carousel .carousel-inner > .item > img {
-  width: 100%;
-}
-.vertical.carousel .carousel-inner > .item.next,
-.vertical.carousel .carousel-inner > .item.active.right {
-  -webkit-transform: translate3d(0, 100%, 0);
-          transform: translate3d(0, 100%, 0);
-  top: 0;
-}
-.vertical.carousel .carousel-inner > .item.prev,
-.vertical.carousel .carousel-inner > .item.active.left {
-  -webkit-transform: translate3d(0, -100%, 0);
-          transform: translate3d(0, -100%, 0);
-  top: 0;
-}
-.vertical.carousel .carousel-inner > .item.next.left,
-.vertical.carousel .carousel-inner > .item.prev.right,
-.vertical.carousel .carousel-inner > .item.active {
-  -webkit-transform: translate3d(0, 0, 0);
-          transform: translate3d(0, 0, 0);
-  top: 0;
-}
-.vertical.carousel .carousel-inner > .active,
-.vertical.carousel .carousel-inner > .next.left,
-.vertical.carousel .carousel-inner .prev.right {
-  top: 0;
-}
-.vertical.carousel .carousel-inner > .next,
-.vertical.carousel .carousel-inner > .active.right {
-  top: 100%;
-  left: 0;
-}
-.vertical.carousel .carousel-inner > .prev,
-.vertical.carousel .carousel-inner > .active.left {
-  top: -100%;
-  left: 0;
-}
 
-  /***********************************************************/    
+/***********************************************************/    

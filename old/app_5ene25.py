@@ -10,8 +10,7 @@ import secrets
 from bson import ObjectId  # Importa ObjectId aquí
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
-from dateutil import parser, tz
-from dateutil.parser import isoparse
+from dateutil import parser
 
 # Configuración del logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -279,18 +278,14 @@ def get_alarmas():
         '6': 'timeDifferenceNumericIncident', # Campo calculado numérico              
         '7': 'omArrivalTimestamp',
         '8': 'timeDifferenceNumeric',  # Campo calculado numérico
-        '9': 'alarmIncidentTime',
-        '10': 'alarmIncidentTimeTo',
-        '11': 'alarmWorkOrderTime',
-        '12': 'alarmWorkOrderTimeTo',
-        '13': 'alarmClearedTime',         
-        '14': 'timeDiffNumRep',                 
-        '15': 'TypeNetworkElement',
-        '16': 'networkElementId',
-        '17': 'clients',
-        '18': 'timeResolution',
-        '19': 'sequence',
-        '20': 'plays'
+        '9': 'alarmClearedTime',         
+        '10': 'timeDiffNumRep',                 
+        '11': 'TypeNetworkElement',
+        '12': 'networkElementId',
+        '13': 'clients',
+        '14': 'timeResolution',
+        '15': 'sequence',
+        '16': 'plays'
     }
 
     # Determinar el campo de ordenamiento y la dirección
@@ -317,7 +312,6 @@ def get_alarmas():
                 {"sourceSystemId": search_regex},
                 {"omArrivalTimestamp": search_regex},
                 {"alarmRaisedTime": search_regex},
-                {"alarmIncidentTime": search_regex},
                 {"alarmClearedTime": search_regex},
                 {"timeDifferenceNumeric": search_regex},
                 {"timeDifferenceNumericIncident": search_regex},
@@ -478,7 +472,7 @@ def get_alarmas():
                                 }}
                             ]
                         },
-                        "min"
+                        " min"
                     ]
                 }
 ,
@@ -576,7 +570,7 @@ def get_alarmas():
                                 }}
                             ]
                         },
-                        "min"
+                        " min"
                     ]
                 }
 ,
@@ -634,137 +628,9 @@ def get_alarmas():
                                 }}
                             ]
                         },
-                        "min"
+                        " min"
                     ]
                 }
-,
-                # Calcular 'alarmIncidentTimeFull' sin redondeo 
-                "alarmIncidentTimeFull": {
-                    "$cond": {
-                        "if": { "$ifNull": ["$alarmIncidentTime", False] },  # Verifica si 'alarmIncidentTime' existe y no es nulo
-                        "then": {
-                            "$divide": [
-                                { "$subtract": ["$alarmIncidentTime", "$alarmRaisedTime"] },
-                                60000  # Convertir milisegundos a minutos
-                            ]
-                        },
-                        "else": "-"  # Asigna '-' si 'alarmIncidentTime' es nulo
-                    }
-                },               
-                "alarmIncidentTimeTo": {
-                    "$cond": {
-                        "if": { "$ifNull": ["$alarmIncidentTime", False] },
-                        "then": {
-                            "$let": {
-                                "vars": {
-                                    "incidentTimeOrNow": { "$ifNull": ["$alarmIncidentTime", now] }
-                                },
-                                "in": {
-                                    "$concat": [
-                                        # Determinar si el tiempo es negativo
-                                        {
-                                            "$cond": [
-                                                { "$lt": [
-                                                    { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] },                                    
-                                                    0
-                                                ]},
-                                                "-",  # Si es negativo, agregar "-"
-                                                ""    # Si no, dejar vacío
-                                            ]
-                                        },
-                                        # Convertir los minutos a string con dos dígitos si es necesario
-                                        {
-                                            "$cond": [
-                                                { "$lt": [
-                                                    { "$floor": {
-                                                        "$divide": [
-                                                            { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                            60000
-                                                        ]}
-                                                    },
-                                                    10
-                                                ]},
-                                                # Si los minutos son menores que 10, agrega un 0 delante
-                                                { "$concat": [
-                                                    "",
-                                                    { "$toString": {
-                                                        "$floor": {
-                                                            "$divide": [
-                                                                { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                                60000
-                                                            ]
-                                                        }
-                                                    }}
-                                                ]},
-                                                # Si no, usa el valor tal cual
-                                                { "$toString": {
-                                                    "$floor": {
-                                                        "$divide": [
-                                                            { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                            60000
-                                                        ]
-                                                    }
-                                                }}
-                                            ]
-                                        },
-                                        ":",
-                                        # Convertir los segundos restantes a string con dos dígitos
-                                        {
-                                            "$cond": [
-                                                { "$lt": [
-                                                    { "$mod": [
-                                                        { "$floor": {
-                                                            "$divide": [
-                                                                { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                                1000
-                                                            ]}
-                                                        },
-                                                        60
-                                                    ]},
-                                                    10
-                                                ]},
-                                                # Si los segundos son menores que 10, agrega un 0 delante
-                                                { "$concat": [
-                                                    "0",
-                                                    { "$toString": {
-                                                        "$mod": [
-                                                            { "$floor": {
-                                                                "$divide": [
-                                                                    { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                                    1000
-                                                                ]}
-                                                            },
-                                                            60
-                                                        ]
-                                                    }}
-                                                ]},
-                                                # Si no, usa el valor tal cual
-                                                { "$toString": {
-                                                    "$mod": [
-                                                        { "$floor": {
-                                                            "$divide": [
-                                                                { "$abs": { "$subtract": ["$$incidentTimeOrNow", "$alarmReportingTime"] }},
-                                                                1000
-                                                            ]}
-                                                        },
-                                                        60
-                                                    ]
-                                                }}
-                                            ]
-                                        },
-                                        "min"
-                                    ]
-                                }
-                            }
-                        },
-                        "else": "-"
-                    }
-                }
-                #,
-                ## Manejo de 'alarmIncidentTime' con '$ifNull'
-                #"alarmIncidentTime": {
-                #    "$ifNull": ["$alarmIncidentTime", "-"]
-                #}
             }
         },
         {
@@ -800,10 +666,7 @@ def get_alarmas():
                 "timeDifference": 1,        # Formateado para visualización
                 "timeDifferenceNumeric": 1,  # Campo numérico para ordenación
                 "timeDifferenceIncident": 1,        # Formateado para visualización
-                "timeDifferenceNumericIncident": 1,  # Campo numérico para ordenación                
-                "alarmIncidentTime": 1,
-                "alarmIncidentTimeTo": 1,
-                "alarmIncidentTimeFull": 1                
+                "timeDifferenceNumericIncident": 1  # Campo numérico para ordenación                
             }
         }
     ]
@@ -816,79 +679,11 @@ def get_alarmas():
     alarmas = []
     for alarma in cursor:
         # Formatear los campos de fecha y hora
-#        def format_datetime(dt):
-#            if dt:
-#                return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-#            else:
-#                return '-'
-
-        def format_datetime_incident(dt):
-
-            if dt and dt != '-':
-                if isinstance(dt, str):
-                    try:
-                        # Intenta parsear la cadena a datetime
-                        dt = parser.parse(dt)
-                    except ValueError as e:
-                        # Manejo de errores si el formato es incorrecto
-                        print(f"Error al parsear la fecha: {e}")
-                        return '-'
-                elif not isinstance(dt, datetime):
-                    # Si no es string ni datetime, retornar un valor por defecto o manejar el error
-                    print(f"Tipo de dato inesperado: {type(dt)}")
-                    return '-'
-                
-                # Asegurarse de que dt sea consciente de la zona horaria
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=utc)
-                else:
-                    dt = dt.astimezone(utc)
-                
-                        # Asegúrate de que la fecha esté en formato ISO 8601 con zona horaria
-                #return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
-
-                # Convertir a la zona horaria de Buenos Aires y formatear
-                #return dt.astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-                return dt.replace(tzinfo=utc).strftime('%m-%d %H:%M:%S')
-
-            else:
-                return '-'
-
-
-
         def format_datetime(dt):
-
-            if dt and dt != '-':
-                if isinstance(dt, str):
-                    try:
-                        # Intenta parsear la cadena a datetime
-                        dt = parser.parse(dt)
-                    except ValueError as e:
-                        # Manejo de errores si el formato es incorrecto
-                        print(f"Error al parsear la fecha: {e}")
-                        return '-'
-                elif not isinstance(dt, datetime):
-                    # Si no es string ni datetime, retornar un valor por defecto o manejar el error
-                    print(f"Tipo de dato inesperado: {type(dt)}")
-                    return '-'
-                
-                # Asegurarse de que dt sea consciente de la zona horaria
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=utc)
-                else:
-                    dt = dt.astimezone(utc)
-                
-                        # Asegúrate de que la fecha esté en formato ISO 8601 con zona horaria
-                #return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
-
-                # Convertir a la zona horaria de Buenos Aires y formatear
-                return dt.astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
-
+            if dt:
+                return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
             else:
                 return '-'
-
-
-
 
         def format_date_full(dt):
             if dt:
@@ -911,67 +706,23 @@ def get_alarmas():
                 return '-'
              
 
-
-
-        #ToDo funcion lee OT
-        # Llamada a la función
-        #doc_incidente = get_incident_by_externalrecid(alarma.get("alarmId"))
-        doc_alarmIncident = get_alarmIncident(alarma.get("_id"))
-
-        if doc_alarmIncident and "alarmIncidentTime" in doc_alarmIncident:
-            #print('doc_alarmIncident----------------------:')
-            #print(doc_alarmIncident["alarmIncidentTime"])
-            
-            alarma['alarmIncidentTime'] = format_datetime_incident( doc_alarmIncident["alarmIncidentTime"])
-            alarma['alarmIncidentTimeFull'] = format_date_full( doc_alarmIncident["alarmIncidentTime"])
-            alarma['alarmIncidentTimeTo'] = formatear_diferencia(alarma.get('alarmRaisedTime'), doc_alarmIncident["alarmIncidentTime"])
-            v_alarmIncidentTime = doc_alarmIncident["alarmIncidentTime"]
-        else:
-            alarma['alarmIncidentTime'] = '-'
-            alarma['alarmIncidentTimeFull'] = '-'
-            alarma['alarmIncidentTimeTo'] = '-'
-            #ToDo si es ICD puro el v_alarmIncidentTime debe ser el reporting
-            v_alarmIncidentTime = alarma.get('alarmReportingTime')
-
-
-
-        doc_workOrder = get_incident_by_externalrecid( alarma.get("origenId") )
-
-        #print(doc_workOrder)
-        if doc_workOrder and "fechaIniciaOT" in doc_workOrder:
-            #print('fechaIniciaOT: ' + doc_workOrder["fechaIniciaOT"])            
-            alarma['alarmWorkOrderTime'] = format_datetime( isoparse(doc_workOrder["fechaIniciaOT"]))
-            alarma['alarmWorkOrderTimeFull'] = format_date_full( isoparse(doc_workOrder["fechaIniciaOT"]))
-            if v_alarmIncidentTime != '-':
-                alarma['alarmWorkOrderTimeTo'] = formatear_diferenciaOT(v_alarmIncidentTime, doc_workOrder["fechaIniciaOT"])
-            else:
-                alarma['alarmWorkOrderTimeTo'] = '-'    
-        else:
-            alarma['alarmWorkOrderTime'] = '-'
-            alarma['alarmWorkOrderTimeFull'] = '-'
-            alarma['alarmWorkOrderTimeTo'] = '-'
-
-            #22339868
-
-        #print('alarmReportingTime')
-        #print(alarma.get('alarmReportingTime'))
-
         alarma['inicioOUM'] = format_datetime(alarma.get('inicioOUM'))
         alarma['alarmRaisedTime'] = format_datetime(alarma.get('alarmRaisedTime'))
         alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
-        alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))  
         alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
-        
-                    
+        alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))                
+
+        alarma['alarmIncidentTime'] = format_datetime(alarma.get('alarmReportingTime'))
+        alarma['alarmIncidentTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))                
+        alarma['alarmIncidentTimeTo'] = format_datetime(alarma.get('alarmReportingTime'))
+
+        alarma['alarmWorkOrderTime'] = format_datetime(alarma.get('alarmReportingTime'))        
+        alarma['alarmWorkOrderTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))                
+        alarma['alarmWorkOrderTimeTo'] = format_datetime(alarma.get('alarmReportingTime'))        
+
         alarma['_id'] = convert_object_ids(alarma.get('_id'))
 
         #logger.info(f"alarmReportingTimeFull {alarma['alarmReportingTimeFull']}")
-
-        # Manejar el campo 'alarmIncidentTime'
-        if not alarma.get('alarmIncidentTime'):
-            alarma['alarmIncidentTime'] = '-'
-        else:
-            alarma['alarmIncidentTime'] = format_datetime(alarma.get('alarmIncidentTime'))
 
         # Manejar el campo 'timeResolution'
         if not alarma.get('timeResolution'):
@@ -1175,7 +926,7 @@ def update_visible_alarms():
                                 }}
                             ]
                         },
-                        "min"
+                        " min"
                     ]
                 }
             
@@ -1214,7 +965,6 @@ def update_visible_alarms():
         return jsonify({"error": "Ocurrió un error al actualizar las alarmas"}), 500
 
 ##########
-
 
 ##########
 # Ruta para exportar los datos
@@ -1275,209 +1025,6 @@ def export_data(format):
     else:
         logger.warning("Formato de exportación no soportado.")
         return "Unsupported format. Please use 'csv' or 'excel'."
-
-#/****************************/
-
-def get_incident_by_externalrecid(externalrecid):
-    """
-    Retorna el documento más reciente (ordenado por _id desc) de 'workorder-read'
-    cuyo campo 'externalrecid' coincida con el valor proporcionado.
-    Devuelve None si no existe ningún documento que cumpla la condición.
-        Ticket ICD: externalId
-        Fecha de creación de OT: creationDate
-        nro de OT: id
-        fecha cierre OT: timeOccurred
-
-    Parámetros:
-        externalrecid (str): El valor de externalrecid a buscar.
-    """
-    try:
-        # Primera consulta: Obtener el incidente más reciente
-        incident_query = {
-            "isglobal": True,  # Cambiado a booleano en lugar de string "true"
-            "ticketid": externalrecid
-        }
-        incident = mongo.db['incident-read'].find_one(
-            incident_query,
-            sort=[("_id", -1)]
-        )
-
-        if not incident:
-            #logger.info(f"No se encontró ningún incidente con ticketid: {externalrecid}")
-            return None
-
-        # Extraer los nro_ot del campo workorder
-        nro_ots = [ot['nro_ot'] for ot in incident.get('workorder', [])]
-
-        if not nro_ots:
-            #logger.info(f"No se encontraron workorders asociadas al incidente: {externalrecid}")
-            return None
-
-        # Segunda consulta: Obtener la workorder más reciente
-        workorder_query = {
-            "event.workOrder.externalId": {"$in": nro_ots}
-        }
-        workorder = mongo.db['workorder-read'].find_one(
-            workorder_query,
-            projection={
-                "_id": 0,
-                "fechaIniciaOT": "$event.workOrder.creationDate",
-                "fechaFinOT": "$event.workOrder.timeOccurred",
-                "fechalastUpdate": "$event.workOrder.lastUpdate",
-                "id": "$event.workOrder.id",
-                "workOrderId": "$event.workOrder.externalId"
-            },
-            sort=[("event.workOrder.lastUpdate", -1)]
-        )
-
-        if workorder:
-            #logger.info(f"Workorder encontrada para el incidente: {externalrecid}")
-            return workorder
-        else:
-            #logger.info(f"No se encontró ninguna workorder asociada a los nro_ot: {nro_ots}")
-            return None
-
-    except Exception as e:
-        logger.error(f"Error al buscar workorder por externalrecid (ICD{externalrecid}): {str(e)}", exc_info=True)
-        return None
-
-
-#/****************************/
-
-def get_alarmIncident(idOutage):
-    """
-    Retorna la fecha de envio de ICD al topic 
-    """
-    try:
-
-        idOutage = str(idOutage)
-        # Construye el filtro
-        query = {
-            "idOutage": idOutage
-        }
-
-        # Obtiene el conteo de documentos que coinciden
-        #count = mongo.db['alarmIncident'].count_documents(query)
-        
-
-        # Realiza la consulta con find_one y sort por _id para obtener el último registro
-        doc = mongo.db['alarmIncident'].find_one(
-            query,
-            sort=[("_id", -1)]
-        )
-
-        # Si se encontró un documento, convertimos el _id a string (opcional)
-        if doc:
-            doc["_id"] = idOutage
-
-        #print(f'count: {count} idOutage: {idOutage} ')
-
-        return doc
-    
-    except Exception as e:
-        logger.error(f"Error al buscar alarmIncident ({idOutage}): {str(e)}", exc_info=True)
-        return None
-
-
-def pad_zero(n):
-    """Devuelve el número formateado con dos dígitos."""
-    return f"{n:02d}"
-
-def formatear_diferencia(alarm_raised_time, alarm_incident_time):
-    """
-    Calcula y formatea la diferencia entre alarm_raised_time y alarm_incident_time.
-    
-    :param alarm_raised_time: fecha y hora de inicio (puede ser str o datetime)
-    :param alarm_incident_time: fecha y hora de final (puede ser str o datetime)
-    :return: cadena formateada en 'MM:SS' o solo 'M' si los minutos superan 99.
-    """
-    
-    # Si las fechas vienen como cadenas, se pueden convertir a objetos datetime.
-    # Es necesario conocer el formato de las cadenas. Ejemplo: '%Y-%m-%d %H:%M:%S'
-    formato_fecha = '%Y-%m-%d %H:%M:%S'  # Ajustar según el formato real
-    
-    if isinstance(alarm_raised_time, str):
-        alarm_raised_time = datetime.strptime(alarm_raised_time, formato_fecha)
-    if isinstance(alarm_incident_time, str):
-        alarm_incident_time = datetime.strptime(alarm_incident_time, formato_fecha)
-    
-    # Calcula la diferencia en segundos.
-    # Se asume que alarm_incident_time es la fecha actual o posterior a alarm_raised_time.
-    diferencia = alarm_incident_time - alarm_raised_time
-    diff_ms = diferencia.total_seconds()  # diferencia en segundos
-    
-    # Si la diferencia es negativa, asumimos que la hora está en el futuro y devolvemos '0:00 min'
-    if diff_ms < 0:
-        return '0:00min'
-    
-    diff_total_seconds = int(diff_ms)
-    minutes = diff_total_seconds // 60
-    seconds = diff_total_seconds % 60
-    
-    if minutes > 99:
-        formatted_time = f"{minutes}"
-    else:
-        formatted_time = f"{minutes}:{pad_zero(seconds)}"
-    
-    return f"{formatted_time}min"
-
-
-
-
-def formatear_diferenciaOT(alarm_incident_time, fecha_inicia_ot):
-    """
-    Calcula y formatea la diferencia entre alarm_incident_time y fecha_inicia_ot.
-    
-    :param alarm_incident_time: fecha y hora del incidente (puede ser str o datetime)
-    :param fecha_inicia_ot: fecha y hora de inicio de la OT (puede ser str o datetime)
-    :return: cadena formateada en 'MM:SS' o solo 'M' si los minutos superan 99.
-    """
-    # Parsear las fechas si son strings
-    if isinstance(alarm_incident_time, str):
-        # Si no tiene timezone, asumir que está en UTC
-        if 'T' in alarm_incident_time:
-            alarm_incident_time = parser.isoparse(alarm_incident_time)
-        else:
-            alarm_incident_time = datetime.strptime(alarm_incident_time, '%Y-%m-%d %H:%M:%S').replace(tzinfo=tz.UTC)
-    
-    if isinstance(fecha_inicia_ot, str):
-        fecha_inicia_ot = parser.isoparse(fecha_inicia_ot)
-    
-    # Asegurar que ambas fechas sean timezone-aware
-    if alarm_incident_time.tzinfo is None:
-        alarm_incident_time = alarm_incident_time.replace(tzinfo=tz.UTC)
-    if fecha_inicia_ot.tzinfo is None:
-        fecha_inicia_ot = fecha_inicia_ot.replace(tzinfo=tz.UTC)
-    
-    # Convertir ambas fechas a UTC para evitar problemas con zonas horarias
-    alarm_incident_time = alarm_incident_time.astimezone(tz.UTC)
-    fecha_inicia_ot = fecha_inicia_ot.astimezone(tz.UTC)
-    
-    
-    # Calcular la diferencia en segundos
-    diferencia = fecha_inicia_ot - alarm_incident_time 
-    diff_seconds = diferencia.total_seconds()
-    
-    # Si la diferencia es negativa, devolver '0:00 min'
-    if diff_seconds < 0:
-        return '0:00min'
-    
-    # Formatear la diferencia en minutos y segundos
-    diff_total_seconds = int(diff_seconds)
-    minutes = diff_total_seconds // 60
-    seconds = diff_total_seconds % 60
-    
-    if minutes > 99:
-        formatted_time = f"{minutes}"
-    else:
-        formatted_time = f"{minutes}:{pad_zeroOT(seconds)}"
-    
-    return f"{formatted_time}min"
-
-def pad_zeroOT(number):
-    """Asegura que un número tenga al menos dos dígitos, añadiendo un cero si es necesario."""
-    return f"{number:02d}"
-
 
 if __name__ == '__main__':
     port = os.environ.get('FLASK_PORT') or 8080

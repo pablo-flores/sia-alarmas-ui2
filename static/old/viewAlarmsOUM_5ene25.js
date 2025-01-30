@@ -250,9 +250,9 @@ let existingAlarmIds = [];
 // Array para almacenar los nuevos IDs detectados durante cada carga
 let highlightAlarmIds = [];
 let initialLoad = true;  // <-- nueva bandera
-let TIME_RELOAD = 7000
-let TIME_VER_CELDA = 6800
-let TIME_INTER_CELDA = 6800
+let TIME_RELOAD = 5000
+let TIME_VER_CELDA = 30000
+let TIME_INTER_CELDA = 3000
 
 // Objeto donde guardamos el estado previo de cada fila, 
 // usando como clave el _id de la alarma.
@@ -264,7 +264,7 @@ let updatedCells = {};
 
 // Índices de columnas que NO se deben resaltar (por ejemplo, la 10).
 // Nota: la columna 10 en DataTables es la que corresponde a timeDiffRep en tu ejemplo.
-const excludedColumnIndexes = [14];
+const excludedColumnIndexes = [10];
 
 // Objeto donde guardaremos qué celdas deben seguir en color
 // highlightState[ alarmId ] = { 
@@ -288,20 +288,14 @@ const fieldToColumnIndex = {
   "timeDifferenceIncident": 6,
   "inicioOUM": 7,
   "timeDifference": 8,
-
-  "alarmIncidentTime": 9,
-  "alarmIncidentTimeTo": 10,
-  "alarmWorkOrderTime": 11,
-  "alarmWorkOrderTimeTo": 12,
-
-  "alarmClearedTime": 13,
-  "timeDiffRep": 14,            // Excluida del resaltado
-  "TypeNetworkElement": 15,
-  "networkElementId": 16,
-  "clients": 17,
-  "timeResolution": 18,
-  "plays": 19,
-  "sequence": 20
+  "alarmClearedTime": 9,
+  "timeDiffRep": 10,            // Excluida del resaltado
+  "TypeNetworkElement": 11,
+  "networkElementId": 12,
+  "clients": 13,
+  "timeResolution": 14,
+  "plays": 15,
+  "sequence": 16
 };
 
 
@@ -383,8 +377,8 @@ $(document).ready(function() {
 
                         // Recorremos las keys que te interesan:
                         Object.keys(fieldToColumnIndex).forEach( campo => {
-                            // Saltar la comparación en la columna 14 (timeDiffRep)
-                            if (fieldToColumnIndex[campo] === 14) {
+                            // Saltar la comparación en la columna 10 (timeDiffRep)
+                            if (fieldToColumnIndex[campo] === 10) {
                                 return; 
                             }
                             const oldVal = (oldRow[campo] ?? '').toString().trim();
@@ -421,17 +415,11 @@ $(document).ready(function() {
             { "data": "alarmType" },
             { "data": "alarmRaisedTime" },
             { "data": "alarmReportingTime" },
-            { "data": "timeDifferenceIncident" }, //T.to Detect                                   
+            { "data": "timeDifferenceIncident" },                                    
             { "data": "inicioOUM" },
-            { "data": "timeDifference" }, //T.to Outage
-
-            { "data": "alarmIncidentTime" },
-            { "data": "alarmIncidentTimeTo" }, //T.to Incidente
-            { "data": "alarmWorkOrderTime" },
-            { "data": "alarmWorkOrderTimeTo" },  //T.to OT    
-
+            { "data": "timeDifference" },
             { "data": "alarmClearedTime" }, 
-            { "data": "timeDiffRep" },       //T.to Repar      
+            { "data": "timeDiffRep" },             
             { "data": "TypeNetworkElement" },
             { "data": "networkElementId" },
             { "data": "clients" },
@@ -439,9 +427,7 @@ $(document).ready(function() {
             { "data": "plays", "visible": false },
             { "data": "sequence", "visible": false },
             { "data": "alarmReportingTimeFull", "visible": false },
-            { "data": "_id", "visible": false },  // Incluir pero no mostrar  
-            { "data": "alarmIncidentTimeFull", "visible": false },
-            { "data": "alarmWorkOrderTimeFull", "visible": false }
+            { "data": "_id", "visible": false },  // Incluir pero no mostrar      
         ],
         "autoWidth": true,
         "paging": true,
@@ -453,7 +439,7 @@ $(document).ready(function() {
         "lengthMenu": [ [10, 15, 25, 50, 100, 300, 1000], [10, 15, 25, 50, 100, 300, 1000] ],
         "columnDefs": [
             {
-                "targets": 14, // Índice de la nueva columna "T-to Repar"
+                "targets": 10, // Índice de la nueva columna "T-to Repar"
                 "render": function(data, type, row) {
                     if (type === 'display') {
 
@@ -464,8 +450,8 @@ $(document).ready(function() {
                         //console.log('Rendering T-to Repar for row:', alarmClearedTime);
 
                         if (alarmClearedTime && alarmClearedTime !== '-') {
-                            if (data.length > 8) {
-                                data = data.split(':')[0] + 'min';
+                            if (data.length > 9) {
+                                data = data.split(':')[0] + ' min';
                             }
                             const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
                             //console.log('Rendering T-to Repar for data:', data);
@@ -485,8 +471,8 @@ $(document).ready(function() {
                                 }
                                 
                                 // Procesar 'data' si tiene más de 9 caracteres
-                                if (cleanedData.length > 8) {
-                                    cleanedData = cleanedData.split(':')[0] + 'min';
+                                if (cleanedData.length > 9) {
+                                    cleanedData = cleanedData.split(':')[0] + ' min';
                                 }
                                 
                                 const style = cleanedData.includes('-') ? 'color: red; font-weight: bold;' : '';
@@ -635,8 +621,8 @@ $(document).ready(function() {
                 "orderable": true,
                 "render": function(data, type) {
                     if (type === 'display') {
-                        if (data.length > 8) {
-                            data = data.split(':')[0] + 'min';
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
                         }
                         const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
                         return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
@@ -657,8 +643,8 @@ $(document).ready(function() {
                 "orderable": true,
                 "render": function(data, type) {
                     if (type === 'display') {   
-                        if (data.length > 8) {
-                            data = data.split(':')[0] + 'min';
+                        if (data.length > 9) {
+                            data = data.split(':')[0] + ' min';
                         }
                         const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
                         //return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right;">${data}</div>`;
@@ -667,63 +653,9 @@ $(document).ready(function() {
                     return data;
                 },
                 "orderDataType": "custom-num-sort"
-            },      
-            
-//            
+            },                          
             {
-                "targets": 9, // alarmIncidentTime
-                "orderable": false,
-                "render": function (data) {
-                    return `<div style="text-align: center;">${data}</div>`;
-                }
-            },
-            {
-                "targets": 10, // alarmIncidentTimeTo
-                "type": "num",
-                "orderable": false,
-                "render": function(data, type) {
-                    if (type === 'display') {   
-                        if (data.length > 8) {
-                            data = data.split(':')[0] + 'min';
-                        }
-                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-                        
-                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
-                    }
-                    return data;
-                },
-                "orderDataType": "custom-num-sort"
-            },                      
-
-            {
-                "targets": 11, // alarmWorkOrderTime
-                "orderable": false,
-                "render": function (data) {
-                    return `<div style="text-align: center;">${data}</div>`;
-                }
-            },
-            {
-                "targets": 12, // alarmWorkOrderTimeTo
-                "type": "num",
-                "orderable": false,
-                "render": function(data, type) {
-                    if (type === 'display') {   
-                        if (data.length > 8) {
-                            data = data.split(':')[0] + 'min';
-                        }
-                        const style = data.includes('-') ? 'color: red; font-weight: bold;' : '';
-                        
-                        return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
-                    }
-                    return data;
-                },
-                "orderDataType": "custom-num-sort"
-            },
-
-
-//
-            {
-                "targets": 13, // alarmClearedTime
+                "targets": 9, // alarmClearedTime
                 "render": function (data, type) {
                     if (type === 'display') {
                         //return `<div style="text-align: center;">${data}</div>`;
@@ -734,31 +666,15 @@ $(document).ready(function() {
             },   
                                                                       
             {
-                "targets": 15, // TypeNetworkElement
-                "render": function(data, type, row) {
-                    //let displayValue = data.substring(0, 10);
-                    let displayValue = data.length > 10 ? data.substring(0, 7) + '...' : data;
-                 
-                    if (type === 'display') {
-                        return `
-                            <div class="tooltip-cell" style="text-align: left;" data-alarmid="${displayValue}">
-                                ${displayValue}
-                                <span class="tooltip-text">                           
-                                    <div class="tooltip-row">
-                                        <span class="tooltip-title">Tipo Elemento Red:</span>
-                                        <span class="tooltip-value">${data}</span>
-                                    </div>                                 
-                                </span>
-                            </div>`;
-                    }
-                    return data;
+                "targets": 11, // TypeNetworkElement
+                "render": function (data) {
+                    return `<div style="text-align: left;">${data}</div>`;
                 }
             },
 
             {
-                "targets": 16, // Ahora corresponde a "plays"
+                "targets": 12, // Ahora corresponde a "plays"
                 "render": function(data, type, row) {
-                    let displayValue = data.length > 17 ? data.substring(0, 17) + '...' : data;
                     if (type === 'display') {
                         // Verificar si 'plays' existe y es un array
 
@@ -774,18 +690,10 @@ $(document).ready(function() {
             
                             if (row.plays.length === 0) {formattedPlays='Sin información'}
 
-                            //console.log(row);
-                            //console.log(row.plays);
-                            //console.log(data);
-
                             // Retornar el HTML con el tooltip formateado
                             return `
-                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${displayValue}">${displayValue}
+                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${data}">${data}
                                     <div class="tooltip-text">
-                                        <div class="tooltip-row">
-                                            <span class="tooltip-title">NE:</span>
-                                            <span class="tooltip-value" style="color: red;">${data}</span>
-                                        </div>                                       
                                         <div class="tooltip-title">Cantidad de PLAYs afectados:</div>
                                         <table class="tooltip-table">
                                             <tbody>
@@ -796,7 +704,7 @@ $(document).ready(function() {
                                 </div>`;
                         } else {
                             return `
-                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${displayValue}">${displayValue}
+                                <div class="tooltip-cell" style="text-align: left;" data-alarmid="${data}">${data}
                                     <div class="tooltip-text">
                                         <div class="tooltip-title">Cantidad de PLAYs afectados:</div>
                                         <table class="tooltip-table">
@@ -813,7 +721,7 @@ $(document).ready(function() {
             },
                        
             {
-                "targets": 17, // clients
+                "targets": 13, // clients
                 "type": "num",
                 "render": function (data, type, row) {
 
@@ -829,7 +737,7 @@ $(document).ready(function() {
                 }
             },
             {
-                "targets": 18, // timeResolution
+                "targets": 14, // timeResolution
                 "type": "num",
                 "render": function(data, type, row) {
                     if (type === 'sort' || type === 'type') {
@@ -839,7 +747,7 @@ $(document).ready(function() {
                 }
             },  
             {
-                "targets": 19, // plays
+                "targets": 15, // plays
                 "type": "num",
                 "render": function(data, type, row) {
                     if (type === 'sort' || type === 'type') {
@@ -910,7 +818,6 @@ $(document).ready(function() {
                                 $(cellNode).addClass('updated-cell');
 
                                 // Remover de manera escalonada (ejemplo)
-                                /*
                                 setTimeout(() => {
                                     $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                     setTimeout(() => {
@@ -920,7 +827,7 @@ $(document).ready(function() {
                                         $(cellNode).removeClass('fade-out');
                                     }, TIME_INTER_CELDA);
                                 }, TIME_VER_CELDA);
-*/
+
                                 // TAMBIÉN guardarlo en highlightState:
                                 if (!highlightState[alarmId]) {
                                     highlightState[alarmId] = {};
@@ -958,18 +865,6 @@ $(document).ready(function() {
                         // Obtener la celda de DataTables
                         const cellNode = api.cell(rowNode, colIndex).node();
                         $(cellNode).addClass('updated-cell');
-                        /*
-                                // Remover de manera escalonada (ejemplo)
-                                setTimeout(() => {
-                                    $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
-                                    setTimeout(() => {
-                                        $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit');
-                                    }, TIME_INTER_CELDA);
-                                    setTimeout(() => {
-                                        $(cellNode).removeClass('fade-out');
-                                    }, TIME_INTER_CELDA);
-                                }, TIME_VER_CELDA);        
-                                */                
                     }
                 }
             });
@@ -1178,7 +1073,7 @@ $(document).ready(function() {
 
     /*******************************************************************************/
     // Definir los índices de las columnas a excluir del resaltado
-    const excludedColumns = [14];
+    const excludedColumns = [10];
 
     // Función para actualizar filas visibles
     async function refreshVisibleRows() {
@@ -1265,14 +1160,13 @@ $(document).ready(function() {
                             }
                             highlightState[alarmId][colIndex] = Date.now() + TIME_VER_CELDA + 10; // la celda se verá resaltada hasta dentro de 30s     
                             console.log('highlightState:' + highlightState);                     
-/*
+
                             // Remover la clase 'updated-cell' y agregar 'fade-out' después de 3 segundos
                             setTimeout(() => {  $(cellNode).removeClass('updated-cell').addClass('updated-cell-medio');
                                 // Remover la clase 'fade-out' después de la transición
                                 setTimeout(() => {  $(cellNode).removeClass('updated-cell-medio').addClass('updated-cell-exit'); }, TIME_INTER_CELDA); // Asegúrate de que este tiempo coincida con tu transición CSS
                                 setTimeout(() => {  $(cellNode).removeClass('fade-out'); }, TIME_INTER_CELDA); // Asegúrate de que este tiempo coincida con tu transición CSS
                             }, TIME_VER_CELDA); // Tiempo durante el cual la celda permanece resaltada
-                            */
                         }
                     }
                 }
@@ -1288,13 +1182,13 @@ $(document).ready(function() {
                     updateCellIfChanged(rowIndex, 1, alarm.origenId, alarm._id);
 
                     // Actualizar 'alarmClearedTime' en la columna 9
-                    updateCellIfChanged(rowIndex, 13, alarm.alarmClearedTime, alarm._id);
+                    updateCellIfChanged(rowIndex, 9, alarm.alarmClearedTime, alarm._id);
 
                     // Actualizar 'alarmState' en la columna 2
                     updateCellIfChanged(rowIndex, 2, alarm.alarmState, alarm._id);
 
                     // Actualizar 'timeDiffRep' en la columna 10 (Excluida del resaltado)
-                    updateCellIfChanged(rowIndex, 14, alarm.timeDiffRep, alarm._id);
+                    updateCellIfChanged(rowIndex, 10, alarm.timeDiffRep, alarm._id);
 
                     // Si hay otros campos que desees actualizar, agrégalos aquí
                     // Ejemplo:
@@ -1351,7 +1245,7 @@ function updateTtoRepar() {
                 // Verificar si la diferencia es negativa
                 if (diffMs < 0) {
                     console.warn('alarmRaisedTime está en el futuro:', alarmReportingTimeStr);
-                    element.textContent = '0:00min';
+                    element.textContent = '0:00 min';
                     return;
                 }
 
@@ -1364,7 +1258,7 @@ function updateTtoRepar() {
 
                 let formattedTime;
 
-                if (minutes > 89) { // Cambia la condición según tu necesidad
+                if (minutes > 99) { // Cambia la condición según tu necesidad
                     formattedTime = `${minutes}`;
                 } else {
                     formattedTime = `${minutes}:${padZero(seconds)}`;
@@ -1372,7 +1266,7 @@ function updateTtoRepar() {
 
                 //console.log(`Diferencia: ${formattedTime}`);
 
-                element.textContent = `${formattedTime}min`;
+                element.textContent = `${formattedTime} min`;
             } else {
                 console.warn('alarmReportingTime no es una fecha válida:', alarmReportingTimeStr);
                 element.textContent = 'Tiempo Inválido';

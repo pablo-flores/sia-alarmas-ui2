@@ -3,7 +3,7 @@ Flask-PyMongo==2.3.0
 pytz==2024.1
 requests==2.32.3
 XlsxWriter==3.2.0
-waitress==3.0.1
+waitress
 numpy==2.0.2
 pandas==2.2.2
 flask_wtf

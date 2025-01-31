@@ -941,11 +941,13 @@ def get_alarmas():
                 alarma['alarmWorkOrderTimeFull'] = format_date_full(fecha_inicia_ot)
                 alarma['alarmWorkOrderTimeTo'] = formatear_diferenciaOT(v_alarmIncidentTime, work_order["fechaIniciaOT"]) if v_alarmIncidentTime != '-' else '-'
                 alarma['workOrderId'] = work_order["workOrderId"]
+                alarma['fechalastUpdate'] = format_datetime(work_order["fechalastUpdate"] if work_order.get("fechalastUpdate") else '-')
             else:
                 alarma['alarmWorkOrderTime'] = '-'
                 alarma['alarmWorkOrderTimeFull'] = '-'
                 alarma['alarmWorkOrderTimeTo'] = '-'
                 alarma['workOrderId'] = ' sin OT '
+                alarma['fechalastUpdate'] = '-'
 
         doc_workOrder = get_incident_by_externalrecid(alarma.get("origenId"))
         update_alarma_with_workorder(alarma, doc_workOrder, v_alarmIncidentTime)
@@ -958,6 +960,7 @@ def get_alarmas():
             #22349443
             #22349518
             #22349519
+            #22354095
 
         #print('alarmReportingTime')
         #print(alarma.get('alarmReportingTime'))
@@ -1337,7 +1340,7 @@ def get_incident_by_externalrecid(externalrecid):
         )
 
         if workorder:
-            #logger.info(f"Workorder encontrada para el incidente: {externalrecid}")
+            logger.info(f"Workorder encontrada para el incidente: {workorder}")
             return workorder
         else:
             #logger.info(f"No se encontró ninguna workorder asociada a los nro_ot: {nro_ots}")

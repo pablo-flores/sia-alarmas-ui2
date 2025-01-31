@@ -717,8 +717,12 @@ $(document).ready(function() {
                                 <span class="tooltip-text">                           
                                     <div class="tooltip-row">
                                         <span class="tooltip-title">WorkOrder:</span>
-                                        <span class="tooltip-value">${displayValue}</span>
-                                    </div>                                 
+                                        <span class="tooltip-value">${row.workOrderId || ' sin OT '}</span>
+                                    </div>  
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-title">T.Update OT:</span>
+                                        <span class="tooltip-value">${row.fechalastUpdate || '-'}</span>
+                                    </div>                                                                    
                                 </span>
                             </div>`;
                     }

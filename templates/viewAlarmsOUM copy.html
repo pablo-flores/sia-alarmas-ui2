@@ -41,7 +41,7 @@
             <p>Cargando datos de Alarmas del Outage Manager de los últimos {{ days_configMap }} días, por favor espere...</p>
         </div>
         
-        
+
         <!-- Barra "Service Impact Analysis" con imagen -->
         <nav class="banner"> 
             <div class="service-impact-analysis">
@@ -49,8 +49,11 @@
                 Service Impact Analysis                
                 <!-- Botón de expansión/contracción -->
                 <button id="toggleButton" class="toggle-btn">Click para Explicación de columnas</button>   
-                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.3.0.1 - EN PRUEBAS</div>   
+                <div style='color: red; font-size: 0.8vw; font-weight: bold; text-align: right;'>Version 0.3.0 - EN PRUEBAS</div>   
 
+                <div class="progress-loader-wrapper">
+                    <span class="loader"></span>
+                </div>
                 <div class="refresh-container">
                     
                     <!-- Toggle Switch con Tooltip Personalizado -->
@@ -75,19 +78,10 @@
                        
                 </div>
                 
-                <!-- Ojitos -->
-                <div class="progress-loader-wrapper">
-                    <span class="loader"></span>
-                </div>                
-
-                <!-- Reloj en tiempo real -->
-                <div id="real-time-clock" style="margin-left: 20px; font-size: 1.0vw; font-weight: bold;">
-                    <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
-                </div>
-
             </div> 
             
-        </nav>        
+        </nav>
+        
 
         <!-- Contenido Expandible -->
         <div id="expandableDiv" class="expandable-content" style="display: none;">

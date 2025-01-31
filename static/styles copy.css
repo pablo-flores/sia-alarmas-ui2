@@ -185,9 +185,10 @@ body, html {
     /* Tamaño más pequeño solo para Alarm ID */
 }
 
+
 .btn-modern {
     display: flex;    /* Flexbox para alinear elementos internamente */
-    background-color: #b6abab !important;    /* Color de fondo azul moderno #5290d3; b6abab  */
+    background-color: #5290d3;    /* Color de fondo azul moderno */
     color: white;    /* Texto en blanco */
     text-decoration: none;    /* Elimina el subrayado del enlace */
     font-size: 0.7vw;    /* Tamaño de fuente moderno */
@@ -195,7 +196,7 @@ body, html {
     padding: 4px 20px;    /* Espaciado interior para un botón más slim */
     border-radius: 25px;    /* Bordes redondeados para un estilo moderno */
     /*box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidad */
-    transition: background-color 0.5s ease, box-shadow 0.5s ease;    /* Animaciones suaves */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;    /* Animaciones suaves */
     /*justify-content: space-between;*/
     text-align: right;
     margin-right: 20px;
@@ -898,7 +899,7 @@ hr {
     transition: background-color 0.1s, transform 1.2s;
     border-radius: 50%; /* Botón circular */
 }
-/*
+
 .switch input:checked + .slider {
     background-color: #3b3d3c;
     border: 1px solid black;
@@ -906,7 +907,7 @@ hr {
 
 .switch input:checked + .slider:before {
     background-color: red;
-    transform: translate(13px, -50%); /* Mover horizontalmente y mantener centrado /
+    transform: translate(13px, -50%); /* Mover horizontalmente y mantener centrado */
 }
 
 
@@ -922,7 +923,7 @@ input:focus + .slider {
 input:checked + .slider:before {
     transform: translateX(13px);
 }
-*/
+
 /* Estilos opcionales para el botón de Refresh y el contenedor */
 .refresh-container {
     display: flex;   /* Flexbox para alinear elementos internamente */
@@ -933,10 +934,7 @@ input:checked + .slider:before {
     margin-left: auto;
     /* Mueve el botón completamente a la derecha */
     font-size: 0.7vw;
-    justify-content: flex-end;
-    gap: 5px; /* Espacio entre los elementos */
 }
-
     
 
 /***********************************************************/
@@ -1234,13 +1232,11 @@ input:checked + .slider:before {
   }
 
   .progress-loader-wrapper {
-    
-    display: flex;/* Si solo quieres centrar horizontalmente con flex */
-    /*flex-direction: column;  /* apilar uno debajo del otro */
-    flex-direction: row; /* Cambiar a 'row' si quieres alinear horizontalmente */
+    /* Si solo quieres centrar horizontalmente con flex */
+    display: flex;
+    flex-direction: column;  /* apilar uno debajo del otro */
     align-items: center;     /* centrar en horizontal */
     /*margin-top: 0.5em;       /* espacio si quieres separarlo un poco */
-    /*margin-bottom: 25px; /* Reduce este valor */
 }
 
 /* Opcionalmente, si usabas 'direction: rtl' para la barra, 
@@ -1291,76 +1287,5 @@ input:checked + .slider:before {
 
 /***********************************************************/    
 
-/* Estilos para el reloj en tiempo real */
-#real-time-clock {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Arial, sans-serif;
-    color: #ffffff;
-    background-color: #5290d3;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin-left: 20px;
-}
 
-
-/* Ajustes para los toggles */
-.switch-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    /*margin-top: 55px; /* Reduce este valor */
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 26px;
-    height: 13px;
-    margin-right: 1px;
-    vertical-align: middle;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #b6abab;
-    transition: background-color 0.8s, border 0.8s;
-    border-radius: 12px;
-    border: 1px solid black;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 9px;
-    width: 9px;
-    top: 50%;
-    left: 2px;
-    transform: translateY(-50%);
-    background-color: white;
-    transition: background-color 0.1s, transform 1.2s;
-    border-radius: 50%;
-}
-
-.switch input:checked + .slider {
-    background-color: #3b3d3c;
-    border: 1px solid black;
-}
-
-.switch input:checked + .slider:before {
-    background-color: red;
-    transform: translate(13px, -50%);
-}
 /***********************************************************/    

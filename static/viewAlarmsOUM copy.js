@@ -441,9 +441,7 @@ $(document).ready(function() {
             { "data": "alarmReportingTimeFull", "visible": false },
             { "data": "_id", "visible": false },  // Incluir pero no mostrar  
             { "data": "alarmIncidentTimeFull", "visible": false },
-            { "data": "alarmWorkOrderTimeFull", "visible": false },
-            { "data": "workOrderId", "visible": false }
-            
+            { "data": "alarmWorkOrderTimeFull", "visible": false }
         ],
         "autoWidth": true,
         "paging": true,
@@ -697,35 +695,13 @@ $(document).ready(function() {
                 "orderDataType": "custom-num-sort"
             },                      
 
-            //{
-            //    "targets": 11, // alarmWorkOrderTime
-            //    "orderable": false,
-            //    "render": function (data) {
-            //        return `<div style="text-align: center;">${data}</div>`;
-            //    }
-            //},
             {
                 "targets": 11, // alarmWorkOrderTime
                 "orderable": false,
-                "render": function(data, type, row) {
-                    let displayValue = row.workOrderId || ' sin OT ';
-                    
-                    if (type === 'display') {
-                        return `
-                            <div class="tooltip-cell" style="text-align: left;" data-alarmid="${displayValue}">
-                                ${data}
-                                <span class="tooltip-text">                           
-                                    <div class="tooltip-row">
-                                        <span class="tooltip-title">WorkOrder:</span>
-                                        <span class="tooltip-value">${displayValue}</span>
-                                    </div>                                 
-                                </span>
-                            </div>`;
-                    }
-                    return data;
+                "render": function (data) {
+                    return `<div style="text-align: center;">${data}</div>`;
                 }
             },
-
             {
                 "targets": 12, // alarmWorkOrderTimeTo
                 "type": "num",
@@ -1727,22 +1703,6 @@ document.getElementById('toggleButton').addEventListener('click', function() {
 });
 
 /*******************************************************************************/
-// Función para actualizar el reloj en tiempo real
-function updateRealTimeClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    document.getElementById('hours').textContent = hours;
-    document.getElementById('minutes').textContent = minutes;
-    document.getElementById('seconds').textContent = seconds;
-}
-
-// Actualizar el reloj cada segundo
-setInterval(updateRealTimeClock, 1000);
-
-// Inicializar el reloj al cargar la página
-updateRealTimeClock();
 
 /*******************************************************************************/

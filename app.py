@@ -915,7 +915,6 @@ def get_alarmas():
 
         #ToDo funcion lee OT
         # Llamada a la función
-        #doc_incidente = get_incident_by_externalrecid(alarma.get("alarmId"))
         doc_alarmIncident = get_alarmIncident(alarma.get("_id"))
 
         if doc_alarmIncident and "alarmIncidentTime" in doc_alarmIncident:
@@ -935,23 +934,30 @@ def get_alarmas():
 
 
 
-        doc_workOrder = get_incident_by_externalrecid( alarma.get("origenId") )
-
-        #print(doc_workOrder)
-        if doc_workOrder and "fechaIniciaOT" in doc_workOrder:
-            #print('fechaIniciaOT: ' + doc_workOrder["fechaIniciaOT"])            
-            alarma['alarmWorkOrderTime'] = format_datetime( isoparse(doc_workOrder["fechaIniciaOT"]))
-            alarma['alarmWorkOrderTimeFull'] = format_date_full( isoparse(doc_workOrder["fechaIniciaOT"]))
-            if v_alarmIncidentTime != '-':
-                alarma['alarmWorkOrderTimeTo'] = formatear_diferenciaOT(v_alarmIncidentTime, doc_workOrder["fechaIniciaOT"])
+        def update_alarma_with_workorder(alarma, work_order, v_alarmIncidentTime):
+            if work_order and "fechaIniciaOT" in work_order:
+                fecha_inicia_ot = isoparse(work_order["fechaIniciaOT"])
+                alarma['alarmWorkOrderTime'] = format_datetime(fecha_inicia_ot)
+                alarma['alarmWorkOrderTimeFull'] = format_date_full(fecha_inicia_ot)
+                alarma['alarmWorkOrderTimeTo'] = formatear_diferenciaOT(v_alarmIncidentTime, work_order["fechaIniciaOT"]) if v_alarmIncidentTime != '-' else '-'
+                alarma['workOrderId'] = work_order["workOrderId"]
             else:
-                alarma['alarmWorkOrderTimeTo'] = '-'    
-        else:
-            alarma['alarmWorkOrderTime'] = '-'
-            alarma['alarmWorkOrderTimeFull'] = '-'
-            alarma['alarmWorkOrderTimeTo'] = '-'
+                alarma['alarmWorkOrderTime'] = '-'
+                alarma['alarmWorkOrderTimeFull'] = '-'
+                alarma['alarmWorkOrderTimeTo'] = '-'
+                alarma['workOrderId'] = ' sin OT '
+
+        doc_workOrder = get_incident_by_externalrecid(alarma.get("origenId"))
+        update_alarma_with_workorder(alarma, doc_workOrder, v_alarmIncidentTime)
+
+        if not doc_workOrder or "fechaIniciaOT" not in doc_workOrder:
+            doc_workOrder = get_incident_by_externalrecid(alarma.get("alarmId"))
+            update_alarma_with_workorder(alarma, doc_workOrder, v_alarmIncidentTime)
 
             #22339868
+            #22349443
+            #22349518
+            #22349519
 
         #print('alarmReportingTime')
         #print(alarma.get('alarmReportingTime'))

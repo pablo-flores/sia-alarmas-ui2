@@ -348,8 +348,8 @@ def get_alarmas():
 
     # Combinar con el filtro de búsqueda si existe, quita el limite de days_ago !!!
     if search_filter:
-        #query_filter = {"$and": [query_filter, search_filter]}
-        query_filter = {"$and": [query_filter_full, search_filter]} #quita el limite de days_ago !!!
+        query_filter = {"$and": [query_filter, search_filter]}  #limita a days_ago
+        #query_filter = {"$and": [query_filter_full, search_filter]} #quita el limite de days_ago !!!
 
     #logger.info(f"query_filter: {query_filter}")
 

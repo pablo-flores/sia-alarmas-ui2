@@ -74,7 +74,7 @@ def format_datetime_UPD(dt):
 #    else:
 #        return '-'
     if dt:
-        return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+        return dt.replace(tzinfo=utc).astimezone(buenos_aires_tz).strftime('%d-%m %H:%M:%S')
     else:
         return '-'        
 
@@ -108,9 +108,9 @@ def get_incident_by_ticketid():
 
         # Realizar la consulta a la colección "incident-read"
         query = {
-            "isglobal": True,
-            "workorder": {"$exists": True},
-            "ticketid": ticketid
+            "isglobal": True,           
+            "ticketid": ticketid,
+            "workorder": {"$exists": True}
         }
 
         # Ejecutar la consulta
@@ -296,6 +296,7 @@ def get_alarmas():
     # Determinar el campo de ordenamiento y la dirección
     sort_field = column_mapping.get(order_column_index, 'omArrivalTimestamp')
     sort_direction = ASCENDING if order_direction.lower() == 'asc' else DESCENDING
+    #sort_direction = DESCENDING if order_direction.lower() == 'desc' else ASCENDING
 
     logger.info(f"Sorting by: {sort_field}, Direction: {order_direction}, search_value: '{search_value}'")
 
@@ -339,11 +340,19 @@ def get_alarmas():
         ]
     }
 
-    # Combinar con el filtro de búsqueda si existe
+    query_filter_full = {
+        "$or": [
+            {"alarmState": {"$in": ['RAISED', 'UPDATED', 'RETRY', 'CLEARED']}}
+        ]
+    }
+
+    # Combinar con el filtro de búsqueda si existe, quita el limite de days_ago !!!
     if search_filter:
-        query_filter = {"$and": [query_filter, search_filter]}
+        #query_filter = {"$and": [query_filter, search_filter]}
+        query_filter = {"$and": [query_filter_full, search_filter]} #quita el limite de days_ago !!!
 
     #logger.info(f"query_filter: {query_filter}")
+
 
     # Construir el pipeline de agregación
     pipeline = [
@@ -849,6 +858,7 @@ def get_alarmas():
 
                 # Convertir a la zona horaria de Buenos Aires y formatear
                 #return dt.astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+                #return dt.replace(tzinfo=utc).strftime('%d-%m %H:%M:%S')
                 return dt.replace(tzinfo=utc).strftime('%m-%d %H:%M:%S')
 
             else:
@@ -882,7 +892,7 @@ def get_alarmas():
                 #return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
 
                 # Convertir a la zona horaria de Buenos Aires y formatear
-                return dt.astimezone(buenos_aires_tz).strftime('%m-%d %H:%M:%S')
+                return dt.astimezone(buenos_aires_tz).strftime('%d-%m %H:%M:%S')
 
             else:
                 return '-'
@@ -988,31 +998,30 @@ def get_alarmas():
         else:
             alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
 
-            # Procesar 'origenId'
-            origen_id = alarma.get('origenId', '')
-            if len(origen_id) == 24:
-                alarma['origenId'] = f"FMS {origen_id}"
-            elif len(origen_id) in [10, 13]:
-                alarma['origenId'] = f"FMC {origen_id}"
-            elif len(origen_id) in [8, 9]:
-                alarma['origenId'] = f"ICD {origen_id}"            
-            elif origen_id:
-                alarma['origenId'] = f"    {origen_id}"
-            else:
-                alarma['origenId'] = '-'
 
-            # Procesar 'alarmId'
-            alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
-            sourceSystemId = alarma.get('sourceSystemId', '')
-            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
+        
+        # Procesa el origen_id según su longitud y devuelve el origenId formateado.
+        alarma['origenId'] = procesar_origen_id(alarma.get('origenId', ''))
+    
+
+        # Procesar 'alarmId'
+        alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
+        sourceSystemId = alarma.get('sourceSystemId', '')
+        alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
 
 
-            # 'timeDifference' ya está formateado en la etapa de agregación
-            # 'timeDifferenceNumeric' es para referencia y ordenación
+        # 'timeDifference' ya está formateado en la etapa de agregación
+        # 'timeDifferenceNumeric' es para referencia y ordenación
 
-            # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
-            if alarma.get('alarmId') == alarma.get('origenId'):
-                alarma['origenId'] = '-'
+        # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
+        if alarma.get('alarmId') == alarma.get('origenId'):            
+            alarma['origenId'] = '-'
+
+        # si es ICD se completa alarmIncidentTime
+        if alarma.get('sourceSystemId', '') == 'ICD':
+            alarma['alarmIncidentTime'] = alarma['alarmReportingTime']
+            alarma['alarmIncidentTimeTo'] = alarma['timeDifferenceIncident'] 
+
 
 
 
@@ -1340,7 +1349,7 @@ def get_incident_by_externalrecid(externalrecid):
         )
 
         if workorder:
-            logger.info(f"Workorder encontrada para el incidente: {workorder}")
+            #logger.info(f"Workorder encontrada para el incidente: {workorder}")
             return workorder
         else:
             #logger.info(f"No se encontró ninguna workorder asociada a los nro_ot: {nro_ots}")

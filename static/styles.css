@@ -177,7 +177,16 @@ body, html {
     height: 100vh;
     text-align: center;
     flex-direction: column;
+    z-index: 1000;
 }
+
+#loading-message {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #ffbb00; /* Cambia este color por el que prefieras */
+}
+
 
 /* Estilo específico para el encabezado Alarm ID */
 .small-title {
@@ -212,12 +221,6 @@ body, html {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);    /* Sombra reducida cuando se hace clic */
 }
 
-#loading-message {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    background-color: #ffbb00; /* Cambia este color por el que prefieras */
-}
 
 /* Estilo moderno para el campo de búsqueda de DataTables */
 .dataTables_filter label {

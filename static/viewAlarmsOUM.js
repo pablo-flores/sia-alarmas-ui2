@@ -891,7 +891,7 @@ $(document).ready(function() {
                 "previous": "Anterior"
             },
             "loadingRecords": "Cargando...",
-            //"processing": 'Procesando...',
+            "processing": 'Procesando...',
             "emptyTable": "No hay datos disponibles en la tabla"
         },
         "drawCallback": function() {

@@ -939,8 +939,7 @@ def get_alarmas():
             alarma['alarmIncidentTime'] = '-'
             alarma['alarmIncidentTimeFull'] = '-'
             alarma['alarmIncidentTimeTo'] = '-'
-            #ToDo si es ICD puro el v_alarmIncidentTime debe ser el reporting
-            v_alarmIncidentTime = alarma.get('alarmReportingTime')
+            v_alarmIncidentTime = alarma.get('alarmReportingTime')#si es ICD puro el v_alarmIncidentTime debe ser el reporting
 
 
 
@@ -1007,7 +1006,10 @@ def get_alarmas():
         # Procesar 'alarmId'
         alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
         sourceSystemId = alarma.get('sourceSystemId', '')
-        alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
+        if sourceSystemId == 'ICD':
+            alarma['alarmId'] = procesar_origen_id(alarma.get('alarmId', '')) #cuando llega 1ro ICD con el evento de FMS se ajusta
+        else:    
+            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
 
 
         # 'timeDifference' ya está formateado en la etapa de agregación

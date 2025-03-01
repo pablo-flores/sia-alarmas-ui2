@@ -1503,7 +1503,7 @@ def pad_zeroOT(number):
 
 
 # Nueva ruta para obtener las alarmas en formato JSON para Bonelli
-@app.route('/get_all_alarms', methods=['GET'])
+@app.route('/get_raised_all_alarms', methods=['GET'])
 def get_all_alarms():
     # Obtener la IP del cliente
     if request.headers.get('X-Forwarded-For'):

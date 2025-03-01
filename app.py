@@ -1625,7 +1625,7 @@ def get_all_alarms():
                 "alarmType": 1,
                 "alarmState": 1,  # Campo actualizado
                 "clients": 1,
-                "TypeNetworkElement": "$networkElement.type",
+                "typeNetworkElement": "$networkElement.type",
                 "networkElementId": 1,
                 "timeResolution": 1,
                 "sourceSystemId": 1,
@@ -1729,8 +1729,6 @@ def get_all_alarms():
             alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
 
 
-        # 'timeDifference' ya está formateado en la etapa de agregación
-        # 'timeDifferenceNumeric' es para referencia y ordenación
 
         # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
         if alarma.get('alarmId') == alarma.get('origenId'):            

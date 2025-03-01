@@ -1499,6 +1499,265 @@ def pad_zeroOT(number):
     return f"{number:02d}"
 
 
+############################
+
+
+# Nueva ruta para obtener las alarmas en formato JSON para Bonelli
+@app.route('/get_all_alarms', methods=['GET'])
+def get_all_alarms():
+    # Obtener la IP del cliente
+    if request.headers.get('X-Forwarded-For'):
+        client_ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    else:
+        client_ip = request.remote_addr
+
+    client_user = request.remote_user
+    logger.info(f"IP: {client_ip} User: {client_user} - /get_all_alarms. Solicitud de Bonelli")
+
+    # Calcular la fecha límite para alarmas CLEARED
+    days_ago = datetime.now(buenos_aires_tz) - timedelta(days=days_configMap)
+    #logger.info(f"Consultando alarmas desde {days_ago}.")
+
+    # Obtener parámetros de paginación
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 15))
+    skip = (page - 1) * limit
+    search_value = request.args.get('search[value]', '').strip()
+
+    # Obtener información de ordenamiento
+    order_column_index = request.args.get('order[0][column]', '7')  # Por defecto, omArrivalTimestamp
+    order_direction = request.args.get('order[0][dir]', 'desc')  # Por defecto, descendente
+
+    # Mapeo de índices de columna a campos de la base de datos
+    column_mapping = {
+        '0': 'alarmId',
+        '1': 'origenId',
+        '2': 'alarmState',
+        '3': 'alarmType',
+        '4': 'alarmRaisedTime',
+        '5': 'alarmReportingTime',
+        '7': 'omArrivalTimestamp',
+        '13': 'alarmClearedTime',                    
+        '15': 'TypeNetworkElement',
+        '16': 'networkElementId',
+        '17': 'clients',
+        '18': 'timeResolution',
+        '19': 'sequence',
+        '20': 'plays'
+    }
+
+    # Determinar el campo de ordenamiento y la dirección
+    sort_field = column_mapping.get(order_column_index, 'omArrivalTimestamp')
+    sort_direction = ASCENDING if order_direction.lower() == 'asc' else DESCENDING
+    #sort_direction = DESCENDING if order_direction.lower() == 'desc' else ASCENDING
+
+    logger.info(f"Sorting by: {sort_field} {order_direction}, search[value]='{search_value}'")
+
+    # Calcula la hora actual en Python
+    now = datetime.utcnow()
+
+    # Construir el filtro de búsqueda si se proporciona un valor de búsqueda
+    search_filter = {}
+    if search_value:
+        search_regex = {"$regex": search_value, "$options": "i"}
+        search_filter = {
+            "$or": [
+                {"alarmId": search_regex},
+                {"alarmType": search_regex},
+                {"alarmState": search_regex},
+                {"clients": search_regex},
+                {"networkElementId": search_regex},
+                {"origenId": search_regex},
+                {"sourceSystemId": search_regex},
+                {"omArrivalTimestamp": search_regex},
+                {"alarmRaisedTime": search_regex},
+                {"alarmIncidentTime": search_regex},
+                {"alarmClearedTime": search_regex},
+                {"alarmReportingTime": search_regex},
+                {"networkElement.type": search_regex},   
+                {"timeResolution": search_regex},
+                {"sequence": search_regex},
+                {"plays": search_regex}
+            ]
+        }
+
+    # Construir el filtro principal excluyendo 'DAMAGED'
+    query_filter = {
+        "$or": [
+            {"alarmState": {"$in": ['RAISED', 'UPDATED', 'RETRY']}}
+            #,{"alarmState": "CLEARED", "alarmClearedTime": {"$gte": days_ago}}
+        ]
+    }
+
+    query_filter_full = {
+        "$or": [
+            {"alarmState": {"$in": ['RAISED', 'UPDATED', 'RETRY', 'CLEARED']}}
+        ]
+    }
+
+    # Combinar con el filtro de búsqueda si existe, quita el limite de days_ago !!!
+    if search_filter:
+        query_filter = {"$and": [query_filter, search_filter]}  #limita a days_ago
+        #query_filter = {"$and": [query_filter_full, search_filter]} #quita el limite de days_ago !!!
+
+    #logger.info(f"query_filter: {query_filter}")
+
+
+    # Construir el pipeline de agregación
+    pipeline = [
+        {
+            "$match": query_filter
+        },
+        {
+            "$sort": {sort_field: 1} if sort_direction == ASCENDING else {sort_field: -1}
+        },
+        #{
+        #    "$skip": skip
+        #},
+        #{
+        #    "$limit": limit
+        #},
+        {
+            "$project": {
+                "_id": 1,
+                "outageId": 1,
+                "alarmId": 1,
+                "alarmType": 1,
+                "alarmState": 1,  # Campo actualizado
+                "clients": 1,
+                "TypeNetworkElement": "$networkElement.type",
+                "networkElementId": 1,
+                "timeResolution": 1,
+                "sourceSystemId": 1,
+                "origenId": 1,
+                "inicioOUM": "$omArrivalTimestamp",
+                "alarmRaisedTime": 1,
+                "alarmClearedTime": 1,
+                "alarmReportingTime": 1,
+                "sequence": 1,
+                "plays": 1
+
+            }
+        }
+    ]
+
+    #logger.info(f"pipeline: {pipeline}")
+
+    # Ejecutar el pipeline de agregación
+    cursor = mongo.db.alarm.aggregate(pipeline)
+
+    alarmas = []
+    for alarma in cursor:
+
+
+        def format_datetime(dt):
+
+            if dt and dt != '-':
+                if isinstance(dt, str):
+                    try:
+                        # Intenta parsear la cadena a datetime
+                        dt = parser.parse(dt)
+                    except ValueError as e:
+                        # Manejo de errores si el formato es incorrecto
+                        print(f"Error al parsear la fecha: {e}")
+                        return '-'
+                elif not isinstance(dt, datetime):
+                    # Si no es string ni datetime, retornar un valor por defecto o manejar el error
+                    print(f"Tipo de dato inesperado: {type(dt)}")
+                    return '-'
+                
+                # Asegurarse de que dt sea consciente de la zona horaria
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=utc)
+                else:
+                    dt = dt.astimezone(utc)
+                
+                        # Asegúrate de que la fecha esté en formato ISO 8601 con zona horaria
+                #return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
+
+                # Convertir a la zona horaria de Buenos Aires y formatear
+                return dt.astimezone(buenos_aires_tz).strftime('%d-%m %H:%M:%S')
+
+            else:
+                return '-'
+
+        def format_date_full(dt):
+            if dt:
+                if isinstance(dt, str):
+                    try:
+                        # Intenta analizar la cadena a un objeto datetime
+                        dt = parser.isoparse(dt)
+                    except ValueError:
+                        logger.error(f"Formato de fecha inválido: {dt}")
+                        return '-'
+                if isinstance(dt, datetime):
+                    # Asegúrate de que el objeto datetime sea consciente de la zona horaria
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=utc)
+                    return dt.astimezone(buenos_aires_tz).strftime('%d-%m-%Y %H:%M:%S')
+                else:
+                    logger.error(f"Tipo de dato inesperado para fecha: {type(dt)}")
+                    return '-'
+            else:
+                return '-'
+
+        alarma['inicioOUM'] = format_date_full(alarma.get('inicioOUM'))
+        alarma['alarmRaisedTime'] = format_date_full(alarma.get('alarmRaisedTime'))
+        alarma['alarmClearedTime'] = format_date_full(alarma.get('alarmClearedTime'))
+        alarma['alarmReportingTime'] = format_date_full(alarma.get('alarmReportingTime'))
+        
+                    
+        alarma['_id'] = convert_object_ids(alarma.get('_id'))
+
+        # Manejar el campo 'timeResolution'
+        if not alarma.get('timeResolution'):
+            alarma['timeResolution'] = '-'
+        else:
+            alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
+
+        
+        # Procesa el origen_id según su longitud y devuelve el origenId formateado.
+        alarma['origenId'] = procesar_origen_id(alarma.get('origenId', ''))
+    
+
+        # Procesar 'alarmId'
+        alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
+        sourceSystemId = alarma.get('sourceSystemId', '')
+        if sourceSystemId == 'ICD':
+            alarma['alarmId'] = procesar_origen_id(alarma.get('alarmId', '')) #cuando llega 1ro ICD con el evento de FMS se ajusta
+        else:    
+            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
+
+
+        # 'timeDifference' ya está formateado en la etapa de agregación
+        # 'timeDifferenceNumeric' es para referencia y ordenación
+
+        # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
+        if alarma.get('alarmId') == alarma.get('origenId'):            
+            alarma['origenId'] = '-'
+
+
+
+        alarmas.append(alarma)
+
+    # Contar el total de documentos que coinciden con el filtro (sin paginación)
+    total_count = mongo.db.alarm.count_documents(query_filter)
+
+    logger.info(f"Se encontraron {len(alarmas)} alarmas")
+    logger.info(f"-------------------------------------------------")
+
+    return jsonify({
+        "draw": int(request.args.get('draw', 1)),
+        "recordsTotal": total_count,
+        "recordsFiltered": total_count,
+        "data": alarmas
+    })
+
+
+############################
+
+
+
 if __name__ == '__main__':
     port = os.environ.get('FLASK_PORT') or 8080
     logger.info(f"Iniciando la aplicación en el puerto {port}.")

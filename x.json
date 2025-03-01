@@ -1,40 +1,91 @@
-{
-    "alarmId": "67884e1f2402c40712bef67c",
-    "assets": [
-        {
-            "affectPlays": [
-                {
-                    "play": "VOZ_RESIDENCIAL"
-                },
-                {
-                    "play": "INTERNET_RESIDENCIAL"
-                },
-                {
-                    "play": "FLOW"
-                }
-            ],
-            "alarmDetails": "USCER_EXHI",
-            "alarmRaisedTime": "2025-01-15T21:07:43",
-            "alarmReportingTime": "2025-01-15T21:17:07",
-            "alarmState": "RAISED",
-            "alarmType": "DEGRADACION",
-            "alarmedObjectType": "PUERTO NODO",
-            "networkElementId": "AZU006A",
-            "perceivedSeverity": "Media",
-            "reopened": false,
-            "specificProblem": "USCER_EXHI",
-            "timeResolution": 8
-        }
-    ],
-    "createAt": "2025-01-15T21:17:54",
-    "isRootCause": true,
-    "origenId": "22148955",
-    "sourceSystemId": "ICD"
-},
-"offsetKafka": 103880,
-"origenId": "22148955",
-"receiverSend": true,
-"seEnviaAlReceiver": true,
-"sendReceiverTime": "Thu, 16 Jan 2025 00:17:54 GMT",
-"sourceSystemId": "ICD"
-}
+MATCH (n:Recurso {ID: "IPTV"}) 
+CALL apoc.path.subgraphNodes(n, { relationshipFilter: ">", labelFilter: "/CFS|/CPE", uniqueness: "NODE_GLOBAL" })
+ YIELD node AS cfscpe MATCH (cfscpe)<--(d:ACCESO)
+  MATCH (d)-->(cfs:CFS)-->(cli:CLIENTE) 
+  WHERE cfs:FLOW 
+  OPTIONAL MATCH (cfs)-->(cpe:CPE) 
+  return distinct cli.ID as clientId,
+   d.ID as addressId,
+    split(cfs.UID, '#')[1] AS productId,
+     split(split(cfs.UID, ';')[1], "#")[0] as productType,
+      COALESCE(COALESCE(cpe.MAC_ADDRESS, cpe.SERIAL_NUMBER),cfs.ID) as id,
+       coalesce(split(COALESCE(cpe.name,cfs.name), ';')[2], split(COALESCE(cpe.name,cfs.name), ';')[1] ) as type,
+        COALESCE(split( d.name,";")[-1],"") AS tech
+
+
+        MATCH (n:Recurso {ID: \$id})
+         CALL apoc.path.subgraphNodes(n, { relationshipFilter: '>', labelFilter: '/CFS|/CPE', uniqueness: 'NODE_GLOBAL' })
+        YIELD node AS cfscpe MATCH (cfscpe)<--(d:ACCESO)
+        MATCH (d)-->(cfs:CFS)-->(cli:CLIENTE)				
+        ${choice_play}
+        OPTIONAL MATCH (cfs)-->(cpe:CPE)
+        return distinct cli.ID as clisentId,
+        d.ID as addressId,
+        split(cfs.UID, '#')[1] AS productId,
+        split(split(cfs.UID, ';')[1], "#")[0] as productType,
+        split(split(COALESCE(cpe.UID,cfs.UID), ';')[-1], '#')[1] as id,
+        coalesce(split(COALESCE(cpe.name,cfs.name), ';')[2], split(COALESCE(cpe.name,cfs.name), ';')[1] ) as type,
+        split(n.UID, ';')[1] AS plant,
+        COALESCE(split( d.name,";")[-1],"") AS tech        
+
+dbms.jvm.additional=-        
+dbms.jvm.additional=-XX:MaxGCPauseMillis=200 
+dbms.jvm.additional=-XX:+ParallelRefProcEnabled 
+dbms.jvm.additional=-XX:+UnlockExperimentalVMOptions 
+dbms.jvm.additional=-XX:+DisableExplicitGC 
+dbms.jvm.additional=-XX:+AlwaysPreTouch 
+dbms.jvm.additional=-XX:+UseStringDeduplication
+dbms.jvm.additional=-XX:InitialRAMPercentage=30.0                
+dbms.jvm.additional=-XX:MinRAMPercentage=50.0
+dbms.jvm.additional=-XX:MaxRAMPercentage=90.0                
+-dbms.jvm.additional=-XX:+UseParallelGC
+-dbms.jvm.additional=-XX:GCTimeRatio=4
+dbms.jvm.additional=-XX:MaxMetaspaceSize=256m
+-dbms.jvm.additional=-XX:ParallelGCThreads=4
+dbms.jvm.additional=-XX:MaxHeapFreeRatio=70
+dbms.jvm.additional=-XX:MinHeapFreeRatio=40
+
+
+dbms.jvm.additional=-XX:+UseG1GC
+dbms.jvm.additional=-XX:MaxGCPauseMillis=200
+dbms.jvm.additional=-XX:+ParallelRefProcEnabled
+dbms.jvm.additional=-XX:+UnlockExperimentalVMOptions
+dbms.jvm.additional=-XX:+DisableExplicitGC
+dbms.jvm.additional=-XX:+AlwaysPreTouch
+dbms.jvm.additional=-XX:+UseStringDeduplication
+dbms.jvm.additional=-XX:InitiatingHeapOccupancyPercent=35
+dbms.jvm.additional=-XX:GCTimeRatio=4
+dbms.jvm.additional=-XX:MaxHeapFreeRatio=70
+dbms.jvm.additional=-XX:MinHeapFreeRatio=40
+
+dbms.jvm.additional=-XX:MaxGCPauseMillis=200
+dbms.jvm.additional=-XX:+ParallelRefProcEnabled
+dbms.jvm.additional=-XX:+UnlockExperimentalVMOptions
+dbms.jvm.additional=-XX:+DisableExplicitGC
+dbms.jvm.additional=-XX:+AlwaysPreTouch
+dbms.jvm.additional=-XX:+UseStringDeduplication
+dbms.jvm.additional=-XX:InitialRAMPercentage=30.0
+dbms.jvm.additional=-XX:MinRAMPercentage=50.0
+dbms.jvm.additional=-XX:MaxRAMPercentage=90.0
+dbms.jvm.additional=-XX:MaxMetaspaceSize=256m
+dbms.jvm.additional=-XX:MaxHeapFreeRatio=70
+dbms.jvm.additional=-XX:MinHeapFreeRatio=40
+
+
+
+-configuracion SR-NEO4J-Dt08.corp.cablevision.com.ar
+dbms.jvm.additional=-XX:+UseG1GC
+dbms.jvm.additional=-XX:MaxGCPauseMillis=300
+dbms.jvm.additional=-XX:+ParallelRefProcEnabled
+dbms.jvm.additional=-XX:+UnlockExperimentalVMOptions
+dbms.jvm.additional=-XX:+DisableExplicitGC
+dbms.jvm.additional=-XX:+AlwaysPreTouch
+dbms.jvm.additional=-XX:+UseStringDeduplication
+dbms.jvm.additional=-XX:InitiatingHeapOccupancyPercent=50
+dbms.jvm.additional=-XX:GCTimeRatio=2
+dbms.jvm.additional=-XX:MaxHeapFreeRatio=60
+dbms.jvm.additional=-XX:MinHeapFreeRatio=40
+dbms.jvm.additional=-XX:InitialRAMPercentage=35.0
+dbms.jvm.additional=-XX:MinRAMPercentage=50.0
+dbms.jvm.additional=-XX:MaxRAMPercentage=85.0
+dbms.jvm.additional=-XX:ParallelGCThreads=24

@@ -1653,7 +1653,7 @@ def get_raised_all_alarms():
                         dt = parser.isoparse(dt)
                     except ValueError:
                         logger.error(f"Formato de fecha inválido: {dt}")
-                        return '-'
+                        return 'null'
                 if isinstance(dt, datetime):
                     # Asegúrate de que el objeto datetime sea consciente de la zona horaria
                     if dt.tzinfo is None:
@@ -1662,9 +1662,9 @@ def get_raised_all_alarms():
                     return dt.isoformat(timespec='seconds').replace('+00:00', 'Z')
                 else:
                     logger.error(f"Tipo de dato inesperado para fecha: {type(dt)}")
-                    return '-'
+                    return 'null'
             else:
-                return '-'
+                return 'null'
 
         alarma['omArrivalTimestamp'] = format_date_full(alarma.get('omArrivalTimestamp'))
         alarma['alarmRaisedTime'] = format_date_full(alarma.get('alarmRaisedTime'))

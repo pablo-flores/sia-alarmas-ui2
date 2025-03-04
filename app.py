@@ -1,7 +1,7 @@
 import logging, time
 from flask import Flask, render_template, Response, jsonify, request
 from pymongo import ASCENDING, DESCENDING
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as timezoneZ
 from flask_pymongo import PyMongo
 from pytz import timezone, utc
 import pandas as pd
@@ -12,6 +12,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
 from dateutil import parser, tz
 from dateutil.parser import isoparse
+
 
 # Configuración del logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -1504,7 +1505,7 @@ def pad_zeroOT(number):
 
 # Nueva ruta para obtener las alarmas en formato JSON para Bonelli
 @app.route('/get_raised_all_alarms', methods=['GET'])
-def get_all_alarms():
+def get_raised_all_alarms():
     # Obtener la IP del cliente
     if request.headers.get('X-Forwarded-For'):
         client_ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
@@ -1512,7 +1513,7 @@ def get_all_alarms():
         client_ip = request.remote_addr
 
     client_user = request.remote_user
-    logger.info(f"IP: {client_ip} User: {client_user} - /get_all_alarms. Solicitud de Bonelli")
+    logger.info(f"IP: {client_ip} User: {client_user} - /get_raised_all_alarms. Solicitud de Bonelli")
 
     # Calcular la fecha límite para alarmas CLEARED
     days_ago = datetime.now(buenos_aires_tz) - timedelta(days=days_configMap)
@@ -1611,12 +1612,6 @@ def get_all_alarms():
         {
             "$sort": {sort_field: 1} if sort_direction == ASCENDING else {sort_field: -1}
         },
-        #{
-        #    "$skip": skip
-        #},
-        #{
-        #    "$limit": limit
-        #},
         {
             "$project": {
                 "_id": 1,
@@ -1630,7 +1625,8 @@ def get_all_alarms():
                 "timeResolution": 1,
                 "sourceSystemId": 1,
                 "origenId": 1,
-                "inicioOUM": "$omArrivalTimestamp",
+                #"inicioOUM": "$omArrivalTimestamp",
+                "omArrivalTimestamp": 1,
                 "alarmRaisedTime": 1,
                 "alarmClearedTime": 1,
                 "alarmReportingTime": 1,
@@ -1649,38 +1645,6 @@ def get_all_alarms():
     alarmas = []
     for alarma in cursor:
 
-
-        def format_datetime(dt):
-
-            if dt and dt != '-':
-                if isinstance(dt, str):
-                    try:
-                        # Intenta parsear la cadena a datetime
-                        dt = parser.parse(dt)
-                    except ValueError as e:
-                        # Manejo de errores si el formato es incorrecto
-                        print(f"Error al parsear la fecha: {e}")
-                        return '-'
-                elif not isinstance(dt, datetime):
-                    # Si no es string ni datetime, retornar un valor por defecto o manejar el error
-                    print(f"Tipo de dato inesperado: {type(dt)}")
-                    return '-'
-                
-                # Asegurarse de que dt sea consciente de la zona horaria
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=utc)
-                else:
-                    dt = dt.astimezone(utc)
-                
-                        # Asegúrate de que la fecha esté en formato ISO 8601 con zona horaria
-                #return dt.replace(tzinfo=timezone.utc).astimezone(buenos_aires_tz).isoformat()
-
-                # Convertir a la zona horaria de Buenos Aires y formatear
-                return dt.astimezone(buenos_aires_tz).strftime('%d-%m %H:%M:%S')
-
-            else:
-                return '-'
-
         def format_date_full(dt):
             if dt:
                 if isinstance(dt, str):
@@ -1693,46 +1657,25 @@ def get_all_alarms():
                 if isinstance(dt, datetime):
                     # Asegúrate de que el objeto datetime sea consciente de la zona horaria
                     if dt.tzinfo is None:
-                        dt = dt.replace(tzinfo=utc)
-                    return dt.astimezone(buenos_aires_tz).strftime('%d-%m-%Y %H:%M:%S')
+                        dt = dt.replace(tzinfo=timezoneZ.utc)
+                    # Formatear en ISO 8601 con 'Z' al final
+                    return dt.isoformat(timespec='seconds').replace('+00:00', 'Z')
                 else:
                     logger.error(f"Tipo de dato inesperado para fecha: {type(dt)}")
                     return '-'
             else:
                 return '-'
 
-        alarma['inicioOUM'] = format_date_full(alarma.get('inicioOUM'))
+        alarma['omArrivalTimestamp'] = format_date_full(alarma.get('omArrivalTimestamp'))
         alarma['alarmRaisedTime'] = format_date_full(alarma.get('alarmRaisedTime'))
         alarma['alarmClearedTime'] = format_date_full(alarma.get('alarmClearedTime'))
         alarma['alarmReportingTime'] = format_date_full(alarma.get('alarmReportingTime'))
+
+        
         
                     
         alarma['_id'] = convert_object_ids(alarma.get('_id'))
 
-        # Manejar el campo 'timeResolution'
-        if not alarma.get('timeResolution'):
-            alarma['timeResolution'] = '-'
-        else:
-            alarma['timeResolution'] = f"{alarma['timeResolution']}hs"
-
-        
-        # Procesa el origen_id según su longitud y devuelve el origenId formateado.
-        alarma['origenId'] = procesar_origen_id(alarma.get('origenId', ''))
-    
-
-        # Procesar 'alarmId'
-        alarm_id = alarma.get('alarmId', '')  # Define alarm_id here before using it
-        sourceSystemId = alarma.get('sourceSystemId', '')
-        if sourceSystemId == 'ICD':
-            alarma['alarmId'] = procesar_origen_id(alarma.get('alarmId', '')) #cuando llega 1ro ICD con el evento de FMS se ajusta
-        else:    
-            alarma['alarmId'] = f"{sourceSystemId} {alarm_id}"
-
-
-
-        # Si 'alarmId' es igual a 'origenId', establecer 'origenId' a '-'
-        if alarma.get('alarmId') == alarma.get('origenId'):            
-            alarma['origenId'] = '-'
 
 
 

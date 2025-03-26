@@ -475,7 +475,7 @@ $(document).ready(function() {
                             return `<div style="font-size: 0.7vw; white-space: wrap; word-break: normal; text-align: right; ${style}">${data}</div>`;
                         }
                         else {
-                            
+                            //15724134
                             const alarmReportingTimeFull = row.alarmReportingTimeFull;
                             if (alarmReportingTimeFull && alarmReportingTimeFull !== '-') {
                                 // Limpiar corchetes si existen en 'data'

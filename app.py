@@ -977,9 +977,12 @@ def get_alarmas():
 
         alarma['inicioOUM'] = format_datetime(alarma.get('inicioOUM'))
         alarma['alarmRaisedTime'] = format_datetime(alarma.get('alarmRaisedTime'))
+        #alarma['alarmRaisedTimeFull'] = format_date_full(alarma.get('alarmRaisedTime')) 
         alarma['alarmClearedTime'] = format_datetime(alarma.get('alarmClearedTime'))
-        alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime'))  
-        alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime'))
+
+        # se cambia a
+        alarma['alarmReportingTimeFull'] = format_date_full(alarma.get('alarmReportingTime')) 
+        alarma['alarmReportingTime'] = format_datetime(alarma.get('alarmReportingTime')) 
         
                     
         alarma['_id'] = convert_object_ids(alarma.get('_id'))

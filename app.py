@@ -1316,7 +1316,11 @@ def get_incident_by_externalrecid(externalrecid):
         # Primera consulta: Obtener el incidente más reciente
         incident_query = {
             "isglobal": True,  # Cambiado a booleano en lugar de string "true"
-            "ticketid": externalrecid
+            "$or": [
+                { "externalrecid": externalrecid },
+                { "ticketid": externalrecid }
+            ],
+            "workorder": {"$exists": True}
         }
         incident = mongo.db['incident-read'].find_one(
             incident_query,
@@ -1328,11 +1332,16 @@ def get_incident_by_externalrecid(externalrecid):
             return None
 
         # Extraer los nro_ot del campo workorder
+        #nro_ots = [ot['nro_ot'] for ot in incident.get('workorder', [])]
+
+        #print(f"nro_ots a: {incident.get('workorder', [])}")
         nro_ots = [ot['nro_ot'] for ot in incident.get('workorder', [])]
+        #print(f"nro_ots a: {nro_ots}")        
 
         if not nro_ots:
             #logger.info(f"No se encontraron workorders asociadas al incidente: {externalrecid}")
             return None
+        #print(f"nro_ots B: {nro_ots}")        
 
         # Segunda consulta: Obtener la workorder más reciente
         workorder_query = {
@@ -1670,8 +1679,6 @@ def get_raised_all_alarms():
         alarma['alarmRaisedTime'] = format_date_full(alarma.get('alarmRaisedTime'))
         alarma['alarmClearedTime'] = format_date_full(alarma.get('alarmClearedTime'))
         alarma['alarmReportingTime'] = format_date_full(alarma.get('alarmReportingTime'))
-
-        
         
                     
         alarma['_id'] = convert_object_ids(alarma.get('_id'))
